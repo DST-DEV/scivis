@@ -293,7 +293,7 @@ def plot_line(x, y, ax=None,
               plt_labels=None, ax_labels=None, ax_units=None,
               colors=None, cmap=None, alpha=None,
               linestyles=None, linewidths=None, markers=None,
-              ax_lims=None,
+              ax_lims=None, margins=True, autoscale_y=True, overflow=True,
               ax_ticks=None, ax_tick_lbls=None,
               ax_ticks_minor=None, ax_tick_lbls_minor=None,
               ax_show_minor_ticks=True, ax_show_grid=True,
@@ -303,6 +303,10 @@ def plot_line(x, y, ax=None,
 
     # Prepare plot data
     x, y = _prepare_xy_line(x, y)
+
+    x, y, ax_lims = _adjust_value_range(x, y, ax_lims=ax_lims, margins=margins,
+                                        autoscale_y=autoscale_y,
+                                        overflow=overflow)
 
     # Prepare style settings
     n_lines = max(x.shape[0], y.shape[0])
@@ -411,19 +415,6 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None, ax_units=None,
                                        req_type=str, n_lines=n_lines)
     if plt_labels[0] is None:
         plt_labels = ["var"+str(i) for i in range(n_lines)]
-    # if plt_labels is None:
-    #     plt_labels = [None]*n_lines
-    # elif isinstance(plt_labels, str):
-    #     plt_labels = [plt_labels]*n_lines
-    # elif isinstance(plt_labels, (Sequence, np.ndarray)):
-    #     if len(plt_labels) == 0:
-    #         plt_labels = ["var"+str(i) for i in range(n_lines)]
-    #     elif not len(plt_labels) == n_lines:
-    #         raise ValueError("Invalid number of plt_labels for"
-    #                          + " number of input dimensions")
-    # else:
-    #     raise TypeError("Invalid input for plt_labels. Must be either a single"
-    #                     "label as a String or a Sequence of Strings")
 
     # Format axis labels & units
     if ax_labels is None:
@@ -495,88 +486,15 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None, ax_units=None,
     if not all((alpha_i is None or (alpha_i >= 0 and alpha_i <= 1))
                for alpha_i in alpha):
         raise ValueError("Alpha values must lie within 0 to 1")
-    # if alpha is None:
-    #     alpha = [1]*n_lines
-    # elif isinstance(alpha, (int, float, np.number)):
-    #     if not (alpha >= 0 and alpha <= 1):
-    #         raise ValueError("Alpha values must lie within 0 to 1")
-    #     alpha = [alpha]*n_lines
-    # elif isinstance(alpha, (Sequence, np.ndarray)):
-    #     if len(alpha) == 0:
-    #         alpha = [1]*n_lines
-    #     elif len(alpha) == n_lines:
-    #         if not all(isinstance(alpha_i, (int, float, np.number))
-    #                    for alpha_i in alpha):
-    #             raise TypeError("Alpha must only contain numeric values")
-    #         if not all((alpha_i >= 0 and alpha_i <= 1) for alpha_i in alpha):
-    #             raise ValueError("Alpha values must lie within 0 to 1")
-    #     else:
-    #         raise ValueError("Invalid number of alpha for "
-    #                          "number of input dimensions")
-    # else:
-    #     raise TypeError("Invalid input for linestyles. Must be either a "
-    #                     "numerical scalar or a Sequence of numercial values "
-    #                     "between 0 and 1")
-
-
 
     # Check Linestyles
     ls = _check_style_variable(var=linestyles, name="linestyles", req_type=str,
                                n_lines=n_lines)
-    # if linestyles is None:
-    #     ls = [None]*n_lines
-    # elif isinstance(linestyles, str) and len(linestyles)>0:
-    #     ls = [linestyles]*n_lines
-    # elif isinstance(linestyles, (Sequence, np.ndarray)):
-    #     if len(linestyles)==0:
-    #         ls = [None]*n_lines
-    #     elif len (linestyles) == n_lines:
-    #         if not all(isinstance(ls_i, str) for ls_i in linestyles):
-    #             raise TypeError("Invalid element type for linestyles parameter."
-    #                             "Must be a Sequence of Strings")
-
-    #         ls = linestyles
-    #     else:
-    #         raise ValueError("Invalid number of linestyles for "
-    #                          + "number of input dimensions")
-    # else:
-    #     raise TypeError("Invalid input for linestyles. Must be either a single"
-    #                     "line style as a String or a Sequence of Strings")
-
 
     # Check Linewidths
     lw = _check_style_variable(var=linewidths, name="linewidths",
                                req_type=(int, float, np.number),
                                n_lines=n_lines)
-
-    # if isinstance(linewidths, (Sequence, np.ndarray)):
-    #     if len(linewidths)==0:
-    #         lw = [None]*n_lines
-    #     elif len (linewidths) == n_lines:
-    #         if not all(isinstance(lw_i, (int, float, np.number))
-    #                    for lw_i in linewidths):
-    #             raise TypeError("Linewidths must only contain numeric values")
-    #         lw = linewidths
-    #     else:
-    #         raise ValueError("Invalid number of linewidths for "
-    #                          + "number of input dimensions")
-
-    # if linewidths is None:
-    #     lw = [mpl.rcParams['lines.linewidth']]*n_lines
-    # elif np.isscalar(linewidths):
-    #     if not isinstance(linewidths, (int, float, np.number)):
-    #         raise TypeError("Linewidths must only contain numeric values")
-    #     lw = [linewidths]*n_lines
-    # elif len(linewidths)==0:
-    #     lw = [mpl.rcParams['lines.linewidth']]*n_lines
-    # elif len (linewidths) == n_lines:
-    #     if not all(isinstance(lw_i, (int, float, np.number))
-    #                for lw_i in linewidths):
-    #         raise TypeError("Linewidths must only contain numeric values")
-    #     lw = linewidths
-    # else:
-    #     raise ValueError("Invalid number of linewidths for "
-    #                      + "number of input dimensions")
 
     if markers is None:
         markers = [{"marker": None}]*n_lines
@@ -608,6 +526,7 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None, ax_units=None,
 
     return plt_labels, axis_labels, col, alpha, ls, lw, markers
 
+
 def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
     # Prepare type name string
     name_mapping = {str: "String",
@@ -628,10 +547,10 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
     # Check if variable is valid
     if var is None:
         var = [fill_value]*n_lines
-    elif isinstance(var, req_type) and len(var)>0:
+    elif isinstance(var, req_type) and len(var) > 0:
         var = [var]*n_lines
     elif isinstance(var, (Sequence, np.ndarray)):
-        if len (var) == n_lines:
+        if len(var) == n_lines:
             if not all(isinstance(var_i, req_type) for var_i in var):
                 raise TypeError("Invalid element type for " + name
                                 + " parameter. Must be a Sequence of")
@@ -645,6 +564,150 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
                         "single " + type_name + "or a Sequence")
 
     return var
+
+
+def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
+                       overflow=True):
+    """
+    Adjusts the value range and axis limits of 2d line plot data.
+
+    Parameters
+    ----------
+    ax_lims : {None, Sequence}, optional
+        Axis limits for the x- and y-axis. Must be either None or a 2-element
+        Sequence in which each element is a 2-element Sequence consisting of
+        the lower & upper axis limit.\n
+        The first element pertains to the x-axis, the second to the y-axis.\n
+        If no axis limits should be enforced, None can be given. This also
+        applies to the elements of the sequence if limits should only be
+        specified for one oxis.\n
+        The default is None.
+    margins : {bool, Sequence}, optional
+        Selection whether margins around the data should be displayed. \n
+        Can either be specified globally as a single boolean, or individually
+        for the x- and y-axis by providing a sequence with two boolean
+        values.\n
+        Note that this also adjusts the axis limits if they were set too large
+        for the actual data.\n
+        The default is True.
+    autoscale_y : bool, optional
+        Selection whether the y-axis should be scaled to match the plotted data
+        within the x-axis limits. Thus only relevant, if x-axis limits are
+        specified and no y-axis limits are given (If y-axis limits are
+        specified, they overwrite this parameters).\n
+        The default is True.
+    overflow : {bool, Sequence}, optional
+        Selection whether overflow of the plotted values into the margins are
+        allowed. This applies in the case that axis limits are specified and
+        margins is set to true for at least one axis.\n
+        Can either be specified globally as a single boolean, or individually
+        for the x- and y-axis by providing a sequence with two boolean
+        values.\n
+        The default is True.
+
+    Raises
+    ------
+    TypeError
+        In case of wrong input types.
+
+    Returns
+    -------
+    XXXX Write return values
+
+    """
+    # Prepare x & y vakzes
+    x, y = _prepare_xy_line(x, y)
+
+    # Check axis limits
+    ax_lims = _check_axis_variable(ax_lims, name="axis limits", sort=True,
+                                   req_len=2)
+
+    # Check entries for margins selection
+    if isinstance(margins, bool):
+        margins = (margins, margins)
+    elif not isinstance(margins, (Sequence, np.ndarray)) or \
+            not all(isinstance(m, bool) for m in margins):
+        raise TypeError("margins must be boolean or a sequence of "
+                        "booleans")
+
+    # Check entry for autoscale_y
+    if not isinstance(autoscale_y, bool):
+        raise TypeError("autoscale_y must be boolean")
+
+    # Check entries for overflow
+    if any(ax_lims) and any(margins):
+        if isinstance(overflow, bool):
+            overflow = (overflow, overflow)
+        elif not isinstance(overflow, (Sequence, np.ndarray)) or \
+                not all(isinstance(o, bool) for o in overflow):
+            raise TypeError("overflow must be boolean or a sequence of "
+                            "booleans")
+
+    # Copy axis limits and convert elements to lists to enable item assignment
+    ax_lims_adjusted = [lim_i if lim_i is None else list(lim_i)
+                        for lim_i in ax_lims]
+
+    # Get data ranges
+    data_lims = np.empty((2, x.shape[0], 2))
+    data_lims[0, :, 0] = np.nanmin(x, axis=1)
+    data_lims[0, :, 1] = np.nanmax(x, axis=1)
+    data_lims[1, :, 0] = np.nanmin(y, axis=1)
+    data_lims[1, :, 1] = np.nanmax(y, axis=1)
+
+    data_lims_global = np.array([np.min(data_lims[:, :, 0], axis=1),
+                                 np.max(data_lims[:, :, 1], axis=1)]).T
+
+    # Applay autoscale for y-axis
+    # Note: Manually specified y-axis limits are prioritized over autoscaling
+    if autoscale_y and ax_lims[1] is None:
+        if ax_lims[0] is None:
+            warnings.warn("y-axis autoscaling not possible without x-axis "
+                          "limits. Resuming without y-axis autoscaling.")
+        else:
+            ax_lims_adjusted[1] = [np.min(y[x >= ax_lims[0][0]]),
+                                   np.max(y[x <= ax_lims[0][1]])]
+
+    # Loop over axes
+    data = np.stack((x, y), axis=0).astype(float)
+    for i in range(2):
+        if ax_lims_adjusted[i] is None:
+            ax_lims_adjusted[i] = data_lims_global[i, :]
+
+        # Remove overflow
+        if not overflow[i]:
+            if ax_lims_adjusted[i][0] > data_lims_global[i, 0] \
+                    or ax_lims_adjusted[i][1] < data_lims_global[i, 1]:
+                # Limit lies within the data => Adjust data ranges to
+                # prevent overflow into the margins
+                for j in range(x.shape[0]):
+                    data[i, j,
+                         ((data[i, j, :] < ax_lims_adjusted[i][0])
+                          | (data[i, j, :] > ax_lims_adjusted[i][1]))
+                         ] = np.nan
+
+        # Adjust axis limits to fit margins
+        if margins[i]:
+            # Adjust axis limits to enable/disable margins
+            margin = abs(data_lims_global[i, 1]-data_lims_global[i, 0])*.05
+
+            if ax_lims_adjusted[i][0] >= data_lims_global[i, 0]:
+                # Limit lies within the data
+                ax_lims_adjusted[i][0] -= margin
+            else:
+                # Limit outside of value range
+                ax_lims_adjusted[i][0] = data_lims_global[i, 0] - margin
+
+            if ax_lims_adjusted[i][1] <= data_lims_global[i, 1]:
+                # Limit lies within the data
+                ax_lims_adjusted[i][1] += margin
+            else:
+                # Limit outside of value range
+                ax_lims_adjusted[i][1] = data_lims_global[i, 1] + margin
+
+    x, y = data  # Unpack combined data again
+
+    return x, y, ax_lims_adjusted
+
 
 def _format_axes_line(ax, ax_labels=None, ax_lims=None,
                       ax_ticks=None, ax_tick_lbls=None,
