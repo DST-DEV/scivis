@@ -45,7 +45,7 @@ def _prepare_xy_line(x, y):
     y = utils._validate_arraylike_numeric(y)
 
     # Unify dimensions of x & y
-    if x.ndim == 1 or y.ndim == 1:
+    if x.ndim == 1 and y.ndim == 1:
         x = np.atleast_2d(x)
         y = np.atleast_2d(y)
     else:
@@ -91,10 +91,17 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None,
     colors : None | str | sequence, optional
         Line colors. Can be specified either as a single color which is applied
         globally to all lines, or as a sequence with one color for each line.
-        Accepts any valid matplotlib color format.
+        Accepts any valid matplotlib color format.\n
+        If None is given, the default colors from the rcParams are used.
         The default is None.
-    cmap : None | str, optional
-        Colormap to apply to the lines. This overwrites the color parameter.\n
+    cmap : None | str | ListedColormap | LinearSegmentedColormap | tuple | list, optional
+        Colormap to apply to the lines. The following inputs are allowed:\n
+        - None: Use default colors from rcParams\n
+        - str: A valid matplotlib colormap name\n
+        - ListedColormap / LinearSegmentedColormap: a colormap object
+        - tuple / list: a list of colors from which to create a linear
+          colormap\n
+        This overwrites the color parameter.\n
         The default is None.
     alpha : None | int | float | sequence of {int, float, numpy.number}, optional
         Transparency values. Can be specified either as a scalar global value
@@ -173,15 +180,20 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None,
     col = None
     if cmap is not None:
         if isinstance(cmap, str):
-            try:
+            if cmap not in mpl.colormaps.keys():
+                raise ValueError("Unknown colormap. Please use a valid "
+                                 "maptlotlib colormap")
+            else:
                 col = mpl.colormaps[cmap](np.linspace(0, 1, n_lines))
-            except KeyError as e:
-                warnings.warn(str(e) + ". Proceeding with default colors")
         elif isinstance(cmap, (ListedColormap, LinearSegmentedColormap)):
             col = cmap(np.linspace(0, 1, n_lines))
         elif isinstance(cmap, (tuple, list)):
             cmap = LinearSegmentedColormap.from_list("scivis_cmap", cmap)
             col = cmap(np.linspace(0, 1, n_lines))
+        else:
+            raise TypeError("cmap must be a string, a ListedColormap / "
+                            "LinearSegmentedColormap object, or a list/tuple "
+                            "of colors")
     elif isinstance(colors, (str)) and colors:
         col = colors
         col = [col]*n_lines
@@ -309,9 +321,9 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
     # Check if variable is valid
     if var is None:
         var = [fill_value]*n_lines
-    elif isinstance(var, req_type) and len(var) > 0:
+    elif isinstance(var, req_type):
         var = [var]*n_lines
-    elif isinstance(var, (Sequence, np.ndarray)):
+    elif isinstance(var, (Sequence, np.ndarray)) and len(var) > 0:
         if len(var) == n_lines:
             if not all(isinstance(var_i, req_type) for var_i in var):
                 raise TypeError("Invalid element type for " + name
