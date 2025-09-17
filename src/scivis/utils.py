@@ -189,3 +189,53 @@ def _validate_numeric(val: int | float | np.number,
         return False
     else:
         return True
+
+
+def replace_outside_nan(arr, min_val, max_val):
+    """
+    Replace all values in a numpy array that lie outside the range
+    [min_val, max_val] with NaN.
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        Input array (1D or 2D).
+    min_val : float or int
+        Minimum allowed value (inclusive).
+    max_val : float or int
+        Maximum allowed value (inclusive).
+
+    Returns
+    -------
+    np.ndarray
+        A new numpy array with out-of-range values replaced by np.nan.
+
+    Raises
+    ------
+    TypeError
+        If arr is not a numpy ndarray or min/max are not numeric.
+    ValueError
+        If arr has more than 2 dimensions or if min_val > max_val.
+    """
+    # --- Input Validation ---
+    if not isinstance(arr, np.ndarray):
+        raise TypeError("Expected 'arr' to be a numpy.ndarray, got "
+                        f"{type(arr)} instead.")
+
+    if arr.ndim not in (1, 2):
+        raise ValueError(f"Expected a 1D or 2D array, got {arr.ndim}D "
+                         "array instead.")
+
+    if not all(isinstance(val, (int, float, np.number))
+               for val in (min_val, max_val)):
+        raise TypeError("min_val and max_val must be numeric (int or float).")
+
+    if min_val > max_val:
+        raise ValueError(f"min_val ({min_val}) cannot be greater than max_val"
+                         f" ({max_val}).")
+
+    result = arr.astype(float, copy=True)  # make sure we can insert NaN safely
+    mask = (result < min_val) | (result > max_val)
+    result[mask] = np.nan
+
+    return result

@@ -67,8 +67,8 @@ def _prepare_xy_line(x, y):
     return x, y
 
 
-def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None,
-                        ax_units=None,
+def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
+                        ax_labels=None, ax_units=None,
                         latex=False, colors=None, cmap=None, alpha=None,
                         linestyles=None, linewidths=None, markers=None):
     """
@@ -80,6 +80,11 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None,
         Number of lines which are plotted.
     plt_labels : None | Sequence of str, optional
         Labels for each of the lines. The default is None.
+    show_legend : bool, optional
+        Selection whether a legend should be displayed. If no labels are
+        specified via plt_labels, default names "var_<i>" are assigned for each
+        line.\n
+        The default is True.
     ax_labels : None | Sequence of str, optional
         Axis labels. Must be either None or a list of two Nones / strings.\n
         The default is None.
@@ -142,36 +147,61 @@ def _resolve_style_line(n_lines, plt_labels=None, ax_labels=None,
         raise TypeError("latex must be a boolean value.")
 
     # Check plot labels
-    plt_labels = _check_style_variable(var=plt_labels, name="plt_labels",
-                                       req_type=str, n_lines=n_lines)
-    if plt_labels[0] is None:
-        plt_labels = ["var"+str(i) for i in range(n_lines)]
+    if isinstance(show_legend, bool):
+        if show_legend:
+            plt_labels = _check_style_variable(var=plt_labels,
+                                               name="plt_labels",
+                                               req_type=str, n_lines=n_lines)
+            if plt_labels[0] is None:
+                plt_labels = ["var"+str(i) for i in range(n_lines)]
+        else:
+            plt_labels = [None]*n_lines
+    else:
+        raise TypeError("show_legend must be a boolean value.")
 
     # Format axis labels & units
     if ax_labels is None:
-        axis_labels = [None, 2]
+        axis_labels = [None, None]
     elif isinstance(ax_labels, (Sequence, np.ndarray)):
         if not len(ax_labels) == 2:
             raise ValueError("Invalid number of axis labels. Must be length 2")
+
+        if not all(isinstance(lbl_i, str) or lbl_i is None
+                   for lbl_i in ax_labels):
+            raise TypeError("Invalid element type for ax_labels parameter. "
+                            "Must be a Sequence of str or None.")
+
         if isinstance(ax_units, (Sequence, np.ndarray)):
-            if not len(ax_labels) == 2:
+            if not len(ax_units) == 2:
                 raise ValueError("Invalid number of axis units. "
                                  + "Must be length 2.")
+
+            if not all(isinstance(unit_i, str) or unit_i is None
+                       for unit_i in ax_units):
+                raise TypeError("Invalid element type for ax_units parameter. "
+                                "Must be a Sequence of str or None.")
+
             if latex is True:
                 axis_labels = [ltx.latex_notation(ax_labels[i], ax_units[i])
                                if ax_labels[i] is not None else None
                                for i in range(2)]
             else:
-                axis_labels = [ax_labels[i] + " [" + ax_units[i] + r"]"
-                               if ax_labels[i] is not None
-                               and ax_units[i] is not None
-                               else None
-                               for i in range(2)]
+                axis_labels = [None, None]
+                for i in range(2):
+                    if isinstance(ax_labels[i], str) and ax_labels[i]:
+                        if isinstance(ax_units[i], str) and ax_units[i]:
+                            ax_units[i] = " [" + ax_units[i] + r"]"
+                        else:
+                            ax_units[i] = ""
+                        axis_labels[i] = ax_labels[i] + ax_units[i]
+
         else:
             if latex is True:
                 axis_labels = [ltx.ensure_math(ax_labels[i]) for i in range(2)]
             else:
-                axis_labels = [ax_labels[i] for i in range(2)]
+                axis_labels = [ax_labels[i]
+                               if ax_labels[i] is not None else None
+                               for i in range(2)]
     else:
         raise TypeError("Invalid input for linestyles. Must be a Sequence of "
                         "Strings.")
@@ -342,7 +372,7 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
 
 
 def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
-                        overflow=True):
+                        overflow=False):
     """
     Adjusts the value range and axis limits of 2d line plot data.
 
@@ -415,7 +445,7 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
         raise TypeError("autoscale_y must be boolean")
 
     # Check entries for overflow
-    if any(ax_lim is not None for ax_lim in ax_lims) and any(margins):
+    if any(margins):
         if isinstance(overflow, bool):
             overflow = (overflow, overflow)
         elif not isinstance(overflow, (Sequence, np.ndarray)) or \
@@ -428,14 +458,16 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
                         for lim_i in ax_lims]
 
     # Get data ranges
-    data_lims = np.empty((2, x.shape[0], 2))
-    data_lims[0, :, 0] = np.nanmin(x, axis=1)
-    data_lims[0, :, 1] = np.nanmax(x, axis=1)
-    data_lims[1, :, 0] = np.nanmin(y, axis=1)
-    data_lims[1, :, 1] = np.nanmax(y, axis=1)
+    data_range = np.empty((2, x.shape[0], 2))
+    data_range[0, :, 0] = np.nanmin(x, axis=1)
+    data_range[0, :, 1] = np.nanmax(x, axis=1)
+    data_range[1, :, 0] = np.nanmin(y, axis=1)
+    data_range[1, :, 1] = np.nanmax(y, axis=1)
 
-    data_lims_global = np.array([np.min(data_lims[:, :, 0], axis=1),
-                                 np.max(data_lims[:, :, 1], axis=1)]).T
+    data_range_global = list(np.array([np.min(data_range[:, :, 0], axis=1),
+                                       np.max(data_range[:, :, 1], axis=1)]).T)
+    data_range_global = [list(data_range_i)
+                         for data_range_i in data_range_global]
 
     # Applay autoscale for y-axis
     # Note: Manually specified y-axis limits are prioritized over autoscaling
@@ -451,38 +483,41 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     data = np.stack((x, y), axis=0).astype(float)
     for i in range(2):
         if ax_lims_adjusted[i] is None:
-            ax_lims_adjusted[i] = data_lims_global[i, :]
-
-        # Remove overflow
-        if not overflow[i]:
-            if ax_lims_adjusted[i][0] > data_lims_global[i, 0] \
-                    or ax_lims_adjusted[i][1] < data_lims_global[i, 1]:
-                # Limit lies within the data => Adjust data ranges to
-                # prevent overflow into the margins
-                for j in range(x.shape[0]):
-                    data[i, j,
-                         ((data[i, j, :] < ax_lims_adjusted[i][0])
-                          | (data[i, j, :] > ax_lims_adjusted[i][1]))
-                         ] = np.nan
+            ax_lims_adjusted[i] = data_range_global[i][:]
 
         # Adjust axis limits to fit margins
         if margins[i]:
             # Adjust axis limits to enable/disable margins
-            margin = abs(data_lims_global[i, 1]-data_lims_global[i, 0])*.05
+            margin = abs(data_range_global[i][1]-data_range_global[i][0])*.025
+            ax_lims_wo_margins = ax_lims_adjusted[i].copy()
 
-            if ax_lims_adjusted[i][0] >= data_lims_global[i, 0]:
+            if ax_lims_adjusted[i][0] >= data_range_global[i][0]:
                 # Limit lies within the data
                 ax_lims_adjusted[i][0] -= margin
             else:
                 # Limit outside of value range
-                ax_lims_adjusted[i][0] = data_lims_global[i, 0] - margin
+                ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
 
-            if ax_lims_adjusted[i][1] <= data_lims_global[i, 1]:
+            if ax_lims_adjusted[i][1] <= data_range_global[i][1]:
                 # Limit lies within the data
                 ax_lims_adjusted[i][1] += margin
             else:
                 # Limit outside of value range
-                ax_lims_adjusted[i][1] = data_lims_global[i, 1] + margin
+                ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
+
+            if overflow[i]:
+                # Enforce data limits until axis limits +- margins
+                data[i, :] = utils.replace_outside_nan(data[i, :],
+                                                       *ax_lims_adjusted[i])
+            else:
+                # Enforce data limits until axis limits
+                data[i, :] = utils.replace_outside_nan(data[i, :],
+                                                       *ax_lims_wo_margins)
+        else:
+            # Remove overflow
+            if not overflow[i]:
+                data[i, :] = utils.replace_outside_nan(data[i, :],
+                                                       *ax_lims_adjusted[i])
 
     x, y = data  # Unpack combined data again
 
@@ -741,3 +776,134 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
         raise TypeError(name + " must be a Sequence or None.")
 
     return var
+
+
+def _apply_rcparams_to_axes(ax):
+    """
+    Apply the scivis rcParams to an existing axes.\n
+    Note: Not all axes parameters can be changed after its creation. The
+    appearance might thus differ to axes created with the scivis rcParams.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes._axes.Axes
+        Matplotlib axes object to apply the rcparams to.
+
+    Raises
+    ------
+    TypeError
+        If ax is not a matplotlib axes object.
+
+    Returns
+    -------
+    None.
+
+    """
+
+    if not isinstance(ax, mpl.axes._axes.Axes):
+        raise TypeError("Axis must be a matplotlib axes object.")
+
+    # --- Axes properties ---
+    ax.set_facecolor(rcparams.rcparams_axes['axes.facecolor'])
+    for spine in ax.spines.values():
+        spine.set_linewidth(rcparams.rcparams_axes['axes.linewidth'])
+        spine.set_edgecolor(rcparams.rcparams_axes['axes.edgecolor'])
+
+    ax.xaxis.label.set_size(rcparams.rcparams_axes['axes.labelsize'])
+    ax.yaxis.label.set_size(rcparams.rcparams_axes['axes.labelsize'])
+    ax.title.set_fontsize(rcparams.rcparams_axes['axes.titlesize'])
+    ax.title.set_color(rcparams.rcparams_axes['axes.titlecolor']
+                       if rcparams.rcparams_axes['axes.titlecolor'] != "auto"
+                       else rcparams.rcparams_text['text.color'])
+    ax.title.set_position((0.5, 1.0))
+    ax.set_prop_cycle(rcparams.rcparams_axes['axes.prop_cycle'])
+
+    # --- Tick parameters ---
+    ax.tick_params(
+        axis='both',
+        which='major',
+        direction=rcparams.rcparams_ticks['xtick.direction'],
+        length=rcparams.rcparams_ticks['xtick.major.size'],
+        width=rcparams.rcparams_ticks['xtick.major.width'],
+        pad=rcparams.rcparams_ticks['xtick.major.pad'],
+        top=rcparams.rcparams_ticks['xtick.top'],
+        right=rcparams.rcparams_ticks['ytick.right'],
+        labelsize=rcparams.rcparams_ticks['xtick.labelsize']
+    )
+    ax.tick_params(
+        axis='both',
+        which='minor',
+        direction=rcparams.rcparams_ticks['xtick.direction'],
+        length=rcparams.rcparams_ticks['xtick.minor.size'],
+        width=rcparams.rcparams_ticks['xtick.minor.width'],
+        pad=rcparams.rcparams_ticks['xtick.minor.pad']
+    )
+
+    # --- Grid ---
+    ax.grid(visible=True, which="major", **rcparams.grid_style["major"])
+    ax.grid(visible=True, which="minor", **rcparams.grid_style["minor"])
+
+    # --- Legend ---
+    leg = ax.get_legend()
+    if leg is not None:
+        leg.set_frame_on(rcparams.rcparams_legend['legend.frameon'])
+        leg.get_frame().set_alpha(
+            rcparams.rcparams_legend['legend.framealpha'])
+        leg.get_frame().set_edgecolor(
+            rcparams.rcparams_legend['legend.edgecolor'])
+        leg.get_frame().set_facecolor(
+            rcparams.rcparams_legend['legend.facecolor']
+            if rcparams.rcparams_legend['legend.facecolor'] != 'inherit'
+            else ax.get_facecolor()
+        )
+        for text in leg.get_texts():
+            text.set_fontsize(rcparams.rcparams_legend['legend.fontsize'])
+            if rcparams.rcparams_legend['legend.labelcolor'] != "None":
+                text.set_color(rcparams.rcparams_legend['legend.labelcolor'])
+
+
+def _apply_rcparams_to_figure(fig):
+    """
+    Apply the scivis rcParams to an existing figure.\n
+    Note: Not all figure parameters can be changed after its creation. The
+    appearance might thus differ to a figure created with the scivis rcParams.
+
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        Matplotlib figure to apply the rcparams to.
+
+    Raises
+    ------
+    TypeError
+        If ax is not a matplotlib axes object.
+
+    Returns
+    -------
+    None.
+
+    """
+
+    if not isinstance(fig, mpl.figure.Figure):
+        raise TypeError("fig must be a matplotlib figure object.")
+
+    # Size and DPI
+    if 'figure.figsize' in rcparams.rcparams_figure:
+        fig.set_size_inches(*rcparams.rcparams_figure['figure.figsize'],
+                            forward=True)
+    if 'figure.dpi' in rcparams.rcparams_figure:
+        fig.set_dpi(rcparams.rcparams_figure['figure.dpi'])
+
+    # Face/edge colors
+    fig.patch.set_facecolor(rcparams.rcparams_figure.get(
+        'figure.facecolor', 'white'))
+    fig.patch.set_edgecolor(rcparams.rcparams_figure.get(
+        'figure.edgecolor', 'white'))
+
+    # Constrained layout
+    fig.set_constrained_layout(rcparams.rcparams_figure.get(
+        'figure.constrained_layout.use', False))
+
+    # Subplot spacing
+    fig.subplots_adjust(top=rcparams.rcparams_figure.get(
+        'figure.subplot.top', 0.94))

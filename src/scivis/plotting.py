@@ -20,7 +20,7 @@ from scivis import rcparams
 
 def plot_line(x, y, ax=None,
               profile="fullsize", scale=1, latex=False,
-              plt_labels=None, ax_labels=None, ax_units=None,
+              plt_labels=None, show_legend=True, ax_labels=None, ax_units=None,
               colors=None, cmap=None, alpha=None,
               linestyles=None, linewidths=None, markers=None,
               ax_lims=None, margins=True, autoscale_y=True, overflow=True,
@@ -70,6 +70,11 @@ def plot_line(x, y, ax=None,
         The default is False.
     plt_labels : None | Sequence of str, optional
         Labels for each of the lines. The default is None.
+    show_legend : bool, optional
+        Selection whether a legend should be displayed. If no labels are
+        specified via plt_labels, default names "var_<i>" are assigned for each
+        line.\n
+        The default is True.
     ax_labels : None | Sequence of str, optional
         Axis labels. Must be either None or a list of two Nones / strings.\n
         The default is None.
@@ -206,7 +211,7 @@ def plot_line(x, y, ax=None,
     n_lines = max(x.shape[0], y.shape[0])
     plt_labels, axis_labels, col, alpha, ls, lw, markers = \
         scifrmt._resolve_style_line(
-            n_lines=n_lines, plt_labels=plt_labels,
+            n_lines=n_lines, plt_labels=plt_labels, show_legend=show_legend,
             ax_labels=ax_labels, ax_units=ax_units,
             latex=latex, colors=colors, cmap=cmap, alpha=alpha,
             linestyles=linestyles, linewidths=linewidths, markers=markers)
@@ -237,8 +242,10 @@ def plot_line(x, y, ax=None,
             fig, ax = plt.subplots()
         elif isinstance(ax, mpl.axes._axes.Axes):
             fig = ax.figure
+            scifrmt._apply_rcparams_to_figure(fig)
+            scifrmt._apply_rcparams_to_axes(ax)
         else:
-            raise TypeError("Axis must be a matplotlib axes object or None")
+            raise TypeError("Axis must be a matplotlib axes object or None.")
 
         # Plot lines
         for i in range(x.shape[0]):
@@ -248,6 +255,9 @@ def plot_line(x, y, ax=None,
             else:
                 ax.plot(x[i, :], y[i, :], label=plt_labels[i], **markers[i],
                         lw=lw[i], c=col[i], alpha=alpha[i], zorder=2)
+
+        if show_legend:
+            ax.legend()
 
         scifrmt._format_axes_line(
             ax=ax, ax_labels=axis_labels, ax_lims=ax_lims,
