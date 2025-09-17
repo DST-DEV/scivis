@@ -20,4 +20,4 @@ dependencies = [
 license = {file = "LICENSE"}
 
 [project.urls]
-Repository = ""
+Repository = "https://github.com/DST-DEV/scivis"
