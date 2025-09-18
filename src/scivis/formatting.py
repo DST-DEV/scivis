@@ -795,7 +795,7 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
     return var
 
 
-def _apply_rcparams_to_axes(ax):
+def _apply_rcparams_to_axes(ax, latex=False, profile="fullsize", scale=1):
     """
     Apply the scivis rcParams to an existing axes.\n
     Note: Not all axes parameters can be changed after its creation. The
@@ -820,40 +820,43 @@ def _apply_rcparams_to_axes(ax):
     if not isinstance(ax, mpl.axes._axes.Axes):
         raise TypeError("Axis must be a matplotlib axes object.")
 
-    # --- Axes properties ---
-    ax.set_facecolor(rcparams.rcparams_axes['axes.facecolor'])
-    for spine in ax.spines.values():
-        spine.set_linewidth(rcparams.rcparams_axes['axes.linewidth'])
-        spine.set_edgecolor(rcparams.rcparams_axes['axes.edgecolor'])
+    rc_profile = rcparams._prepare_rcparams(latex=latex, profile=profile,
+                                            scale=scale)
 
-    ax.xaxis.label.set_size(rcparams.rcparams_axes['axes.labelsize'])
-    ax.yaxis.label.set_size(rcparams.rcparams_axes['axes.labelsize'])
-    ax.title.set_fontsize(rcparams.rcparams_axes['axes.titlesize'])
-    ax.title.set_color(rcparams.rcparams_axes['axes.titlecolor']
-                       if rcparams.rcparams_axes['axes.titlecolor'] != "auto"
+    # --- Axes properties ---
+    ax.set_facecolor(rc_profile['axes.facecolor'])
+    for spine in ax.spines.values():
+        spine.set_linewidth(rc_profile['axes.linewidth'])
+        spine.set_edgecolor(rc_profile['axes.edgecolor'])
+
+    ax.xaxis.label.set_size(rc_profile['axes.labelsize'])
+    ax.yaxis.label.set_size(rc_profile['axes.labelsize'])
+    ax.title.set_fontsize(rc_profile['axes.titlesize'])
+    ax.title.set_color(rc_profile['axes.titlecolor']
+                       if rc_profile['axes.titlecolor'] != "auto"
                        else rcparams.rcparams_text['text.color'])
     ax.title.set_position((0.5, 1.0))
-    ax.set_prop_cycle(rcparams.rcparams_axes['axes.prop_cycle'])
+    ax.set_prop_cycle(rc_profile['axes.prop_cycle'])
 
     # --- Tick parameters ---
     ax.tick_params(
         axis='both',
         which='major',
-        direction=rcparams.rcparams_ticks['xtick.direction'],
-        length=rcparams.rcparams_ticks['xtick.major.size'],
-        width=rcparams.rcparams_ticks['xtick.major.width'],
-        pad=rcparams.rcparams_ticks['xtick.major.pad'],
-        top=rcparams.rcparams_ticks['xtick.top'],
-        right=rcparams.rcparams_ticks['ytick.right'],
-        labelsize=rcparams.rcparams_ticks['xtick.labelsize']
+        direction=rc_profile['xtick.direction'],
+        length=rc_profile['xtick.major.size'],
+        width=rc_profile['xtick.major.width'],
+        pad=rc_profile['xtick.major.pad'],
+        top=rc_profile['xtick.top'],
+        right=rc_profile['ytick.right'],
+        labelsize=rc_profile['xtick.labelsize']
     )
     ax.tick_params(
         axis='both',
         which='minor',
-        direction=rcparams.rcparams_ticks['xtick.direction'],
-        length=rcparams.rcparams_ticks['xtick.minor.size'],
-        width=rcparams.rcparams_ticks['xtick.minor.width'],
-        pad=rcparams.rcparams_ticks['xtick.minor.pad']
+        direction=rc_profile['xtick.direction'],
+        length=rc_profile['xtick.minor.size'],
+        width=rc_profile['xtick.minor.width'],
+        pad=rc_profile['xtick.minor.pad']
     )
 
     # --- Grid ---
@@ -863,20 +866,20 @@ def _apply_rcparams_to_axes(ax):
     # --- Legend ---
     leg = ax.get_legend()
     if leg is not None:
-        leg.set_frame_on(rcparams.rcparams_legend['legend.frameon'])
+        leg.set_frame_on(rc_profile['legend.frameon'])
         leg.get_frame().set_alpha(
-            rcparams.rcparams_legend['legend.framealpha'])
+            rc_profile['legend.framealpha'])
         leg.get_frame().set_edgecolor(
-            rcparams.rcparams_legend['legend.edgecolor'])
+            rc_profile['legend.edgecolor'])
         leg.get_frame().set_facecolor(
-            rcparams.rcparams_legend['legend.facecolor']
-            if rcparams.rcparams_legend['legend.facecolor'] != 'inherit'
+            rc_profile['legend.facecolor']
+            if rc_profile['legend.facecolor'] != 'inherit'
             else ax.get_facecolor()
         )
         for text in leg.get_texts():
-            text.set_fontsize(rcparams.rcparams_legend['legend.fontsize'])
-            if rcparams.rcparams_legend['legend.labelcolor'] != "None":
-                text.set_color(rcparams.rcparams_legend['legend.labelcolor'])
+            text.set_fontsize(rc_profile['legend.fontsize'])
+            if rc_profile['legend.labelcolor'] != "None":
+                text.set_color(rc_profile['legend.labelcolor'])
 
 
 def _apply_rcparams_to_figure(fig):
@@ -905,9 +908,6 @@ def _apply_rcparams_to_figure(fig):
         raise TypeError("fig must be a matplotlib figure object.")
 
     # Size and DPI
-    if 'figure.figsize' in rcparams.rcparams_figure:
-        fig.set_size_inches(*rcparams.rcparams_figure['figure.figsize'],
-                            forward=True)
     if 'figure.dpi' in rcparams.rcparams_figure:
         fig.set_dpi(rcparams.rcparams_figure['figure.dpi'])
 
