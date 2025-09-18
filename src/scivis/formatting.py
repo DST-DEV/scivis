@@ -212,7 +212,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
         if isinstance(cmap, str):
             if cmap not in mpl.colormaps.keys():
                 raise ValueError("Unknown colormap. Please use a valid "
-                                 "maptlotlib colormap")
+                                 "maptlotlib colormap.")
             else:
                 col = mpl.colormaps[cmap](np.linspace(0, 1, n_lines))
         elif isinstance(cmap, (ListedColormap, LinearSegmentedColormap)):
@@ -223,24 +223,41 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
         else:
             raise TypeError("cmap must be a string, a ListedColormap / "
                             "LinearSegmentedColormap object, or a list/tuple "
-                            "of colors")
+                            "of colors.")
     elif isinstance(colors, (str)) and colors:
         col = colors
         col = [col]*n_lines
-    elif isinstance(colors, (list, tuple)) and colors:
-        if len(colors) == 3 \
-            and all(isinstance(c_i, (int, np.integer)) for c_i in colors)\
-                and all(c_i >= 0 and c_i <= 1 for c_i in colors):
-            col = mpl.colors.to_hex(colors)
-            col = [col]*n_lines
-        elif len(colors) == n_lines:
-            for c in colors:
-                if not mpl.colors.is_color_like(c):
-                    warnings.warn("Color input contained invalid colors. "
-                                  + "Proceeding with default colors.")
-                    col = list("k")*n_lines  # Default color
-                    break
-            col = colors
+    elif isinstance(colors, (list, tuple, np.ndarray)):
+        if len(colors) == n_lines:
+            colors = np.asarray(colors)
+
+            if colors.ndim == 1:
+                if colors.dtype.type is np.str_:
+                    col = [mpl.colors.to_hex(c) for c in colors]
+            elif colors.ndim == 2:
+                if not colors.shape[1] in (3, 4):
+                    raise ValueError("Numeric color values must be RGB or "
+                                     "RGBA.")
+
+                colors = utils._validate_arraylike_numeric(
+                    colors, name="colors", allow_neg=False, allow_zero=True)
+
+                if np.max(colors) > 1:
+                    raise ValueError("RGB / RGBA color values must lie within"
+                                     "0 to 1.")
+
+                col = [mpl.colors.to_hex(c) for c in colors]
+            else:
+                warnings.warn("Incompatible shape of colors. Must be a single "
+                              + "color or a list-like with the same length as "
+                              + "the number of lines to plot. Proceeding with "
+                              + "default colors.")
+        elif n_lines == 1 and len(colors) == 3:
+            colors = np.asarray(colors).flatten()
+            if len(colors.flatten()) in (3, 4):  # rgb or rgba
+                col = [mpl.colors.to_hex(colors.flatten())]
+            else:
+                raise ValueError("Numeric color values must be RGB or RGBA.")
         else:
             warnings.warn("Incompatible shape of colors. Must be a single "
                           + "color or a list-like with the same length as "
