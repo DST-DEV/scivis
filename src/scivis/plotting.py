@@ -254,7 +254,7 @@ def plot_line(x, y, ax=None,
                 ax.plot(x[i, :], y[i, :], label=plt_labels[i], **markers[i],
                         lw=lw[i], c=col[i], alpha=alpha[i], zorder=2)
 
-        if show_legend:
+        if show_legend and x.shape[0]>1:
             ax.legend()
 
         scifrmt._format_axes_line(
