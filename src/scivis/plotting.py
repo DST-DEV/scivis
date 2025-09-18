@@ -242,8 +242,6 @@ def plot_line(x, y, ax=None,
             fig, ax = plt.subplots()
         elif isinstance(ax, mpl.axes._axes.Axes):
             fig = ax.figure
-            scifrmt._apply_rcparams_to_figure(fig)
-            scifrmt._apply_rcparams_to_axes(ax)
         else:
             raise TypeError("Axis must be a matplotlib axes object or None.")
 
