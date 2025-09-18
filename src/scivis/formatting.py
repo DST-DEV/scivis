@@ -490,8 +490,8 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     # Note: Manually specified y-axis limits are prioritized over autoscaling
     if autoscale_y and ax_lims[1] is None:
         if ax_lims[0] is None:
-            warnings.warn("y-axis autoscaling not possible without x-axis "
-                          "limits. Resuming without y-axis autoscaling.")
+            ax_lims_adjusted[1] = [np.min(y[x >= data_range_global[0][0]]),
+                                   np.max(y[x <= data_range_global[0][1]])]
         else:
             ax_lims_adjusted[1] = [np.min(y[x >= ax_lims[0][0]]),
                                    np.max(y[x <= ax_lims[0][1]])]
@@ -505,22 +505,32 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
         # Adjust axis limits to fit margins
         if margins[i]:
             # Adjust axis limits to enable/disable margins
-            margin = abs(data_range_global[i][1]-data_range_global[i][0])*.025
+            margin_factor = .025
             ax_lims_wo_margins = ax_lims_adjusted[i].copy()
 
-            if ax_lims_adjusted[i][0] >= data_range_global[i][0]:
-                # Limit lies within the data
-                ax_lims_adjusted[i][0] -= margin
-            else:
-                # Limit outside of value range
-                ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
+            if ax_lims[i] is None:
+                margin = abs(data_range_global[i][1]
+                             - data_range_global[i][0]) * margin_factor
 
-            if ax_lims_adjusted[i][1] <= data_range_global[i][1]:
-                # Limit lies within the data
-                ax_lims_adjusted[i][1] += margin
-            else:
-                # Limit outside of value range
+                ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
                 ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
+            else:
+                margin = abs(ax_lims_adjusted[i][1]
+                             - ax_lims_adjusted[i][0]) * margin_factor
+
+                if ax_lims_adjusted[i][0] >= data_range_global[i][0]:
+                    # Limit lies within the data
+                    ax_lims_adjusted[i][0] -= margin
+                else:
+                    # Limit outside of value range
+                    ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
+
+                if ax_lims_adjusted[i][1] <= data_range_global[i][1]:
+                    # Limit lies within the data
+                    ax_lims_adjusted[i][1] += margin
+                else:
+                    # Limit outside of value range
+                    ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
 
             if overflow[i]:
                 # Enforce data limits until axis limits +- margins
