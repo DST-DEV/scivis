@@ -95,7 +95,7 @@ rcparams_legend = {
     'legend.borderpad': 0.4,
     'legend.columnspacing': 2.0,
     'legend.edgecolor': '0.8',
-    'legend.facecolor': 'inherit',
+    'legend.facecolor': (1, 1, 1, .2),
     'legend.fancybox': True,
     'legend.fontsize': 22,
     'legend.framealpha': 0.8,
