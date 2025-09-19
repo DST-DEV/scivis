@@ -148,14 +148,11 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
 
     # Check plot labels
     if isinstance(show_legend, bool):
-        if show_legend:
-            plt_labels = _check_style_variable(var=plt_labels,
-                                               name="plt_labels",
-                                               req_type=str, n_lines=n_lines)
-            if plt_labels[0] is None:
-                plt_labels = ["var"+str(i) for i in range(n_lines)]
-        else:
-            plt_labels = [None]*n_lines
+        plt_labels = _check_style_variable(var=plt_labels,
+                                           name="plt_labels",
+                                           req_type=str, n_lines=n_lines)
+        if plt_labels[0] is None:
+            plt_labels = ["var"+str(i) for i in range(n_lines)]
     else:
         raise TypeError("show_legend must be a boolean value.")
 
