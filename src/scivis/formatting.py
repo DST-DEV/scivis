@@ -499,22 +499,20 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     # Loop over axes
     data = np.stack((x, y), axis=0).astype(float)
     for i in range(2):
-        if ax_lims_adjusted[i] is None:
-            ax_lims_adjusted[i] = data_range_global[i][:]
-
         # Adjust axis limits to fit margins
         if margins[i]:
             # Adjust axis limits to enable/disable margins
             margin_factor = .025
-            ax_lims_wo_margins = ax_lims_adjusted[i].copy()
 
-            if ax_lims[i] is None:
+            if ax_lims_adjusted[i] is None:
                 margin = abs(data_range_global[i][1]
                              - data_range_global[i][0]) * margin_factor
 
-                ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
-                ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
+                ax_lims_adjusted[i] = [data_range_global[i][0] - margin,
+                                       data_range_global[i][1] + margin]
+                ax_lims_wo_margins = data_range_global[i]
             else:
+                ax_lims_wo_margins = ax_lims_adjusted[i].copy()
                 margin = abs(ax_lims_adjusted[i][1]
                              - ax_lims_adjusted[i][0]) * margin_factor
 
@@ -532,19 +530,18 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
                     # Limit outside of value range
                     ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
 
-            if overflow[i]:
-                # Enforce data limits until axis limits +- margins
-                data[i, :] = utils.replace_outside_nan(data[i, :],
-                                                       *ax_lims_adjusted[i])
-            else:
-                # Enforce data limits until axis limits
-                data[i, :] = utils.replace_outside_nan(data[i, :],
-                                                       *ax_lims_wo_margins)
         else:
-            # Remove overflow
-            if not overflow[i]:
-                data[i, :] = utils.replace_outside_nan(data[i, :],
-                                                       *ax_lims_adjusted[i])
+            if ax_lims_adjusted[i] is None:
+                ax_lims_adjusted[i] = data_range_global[i][:]
+
+        if overflow[i]:
+            # Enforce data limits until axis limits +- margins
+            data[i, :] = utils.replace_outside_nan(data[i, :],
+                                                   *ax_lims_adjusted[i])
+        else:
+            # Enforce data limits until axis limits
+            data[i, :] = utils.replace_outside_nan(data[i, :],
+                                                   *ax_lims_wo_margins)
 
     x, y = data  # Unpack combined data again
 
