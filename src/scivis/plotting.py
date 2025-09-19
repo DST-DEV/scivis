@@ -220,23 +220,22 @@ def plot_line(x, y, ax=None,
     rc_profile = rcparams._prepare_rcparams(latex=latex, profile=profile,
                                             scale=scale)
 
-    with mpl.rc_context(rc_profile):
-        if latex:
-            # Note: These parameters are also part of the latex_text_profile
-            # dict from the scivis.rcparams module. However, matplotlib
-            # apparently handles them differntly when directly assigning them
-            # compared to them being part of the rc_profile for the
-            # mpl.rc_context.
-            mpl.rcParams['text.latex.preamble'] = \
-                "\n".join([r'\usepackage{amsmath}',  # Optional, for math symbols
-                           r'\usepackage{siunitx}'])
-            mpl.rcParams.update({"pgf.preamble": "\n".join([
-                    r"\usepackage[utf8]{inputenc}",
-                    r"\usepackage[T1]{fontenc}",
-                    r"\usepackage{amsmath}",
-                    r"\usepackage[detect-all,locale=DE]{siunitx}",
-                    ])})
+    if latex:
+        # Save current rcParams
+        rcparams_or = {
+            "text.usetex": mpl.rcParams["text.usetex"],
+            "pgf.texsystem": mpl.rcParams["pgf.texsystem"],
+            "pgf.rcfonts": mpl.rcParams["pgf.rcfonts"],
+            "text.latex.preamble": mpl.rcParams["text.latex.preamble"],
+            "pgf.preamble": mpl.rcParams["pgf.preamble"],
+            }
 
+        # Note: These parameters are also part of the rc_profile. However,
+        # leegends in matplotlib apparently ignore the rc_context settings.
+        # Therefore they are changed globally and restored after plotting
+        plt.rcParams.update(rcparams.latex_text_profile)
+
+    with mpl.rc_context(rc_profile):
         # Create figure
         if ax is None:
             fig, ax = plt.subplots()
@@ -254,7 +253,7 @@ def plot_line(x, y, ax=None,
                 ax.plot(x[i, :], y[i, :], label=plt_labels[i], **markers[i],
                         lw=lw[i], c=col[i], alpha=alpha[i], zorder=2)
 
-        if show_legend and x.shape[0]>1:
+        if show_legend and x.shape[0] > 1:
             ax.legend()
 
         scifrmt._format_axes_line(
@@ -264,6 +263,10 @@ def plot_line(x, y, ax=None,
             ax_tick_lbls_minor=ax_tick_lbls_minor,
             ax_show_minor_ticks=ax_show_minor_ticks,
             ax_show_grid=ax_show_grid, ax_show_grid_minor=ax_show_grid_minor)
+
+    if latex:
+        # Restore original rcParams
+        plt.rcParams.update(rcparams_or)
 
     # Export figure to file
     if savefig is True:

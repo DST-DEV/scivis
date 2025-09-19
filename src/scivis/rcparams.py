@@ -97,7 +97,7 @@ rcparams_legend = {
     'legend.edgecolor': '0.8',
     'legend.facecolor': (1, 1, 1, .2),
     'legend.fancybox': True,
-    'legend.fontsize': 22,
+    'legend.fontsize': 28,
     'legend.framealpha': 0.8,
     'legend.frameon': True,
     'legend.handleheight': 0.7,
@@ -110,7 +110,7 @@ rcparams_legend = {
     'legend.numpoints': 1,
     'legend.scatterpoints': 1,
     'legend.shadow': False,
-    'legend.title_fontsize': None,
+    'legend.title_fontsize': None
     }
 
 rcparams_text = {
@@ -149,17 +149,25 @@ grid_style = {
 latex_text_profile = {
     'text.usetex': True,  # Activate latex rendering
     'font.family': 'serif',  # LaTeX default font family
-    "pgf.texsystem": "pdflatex",  # Use pdflatex for generating PDFs
-    "pgf.rcfonts": False,  # Ignore Matplotlib's default font settings
+    'pgf.texsystem': "pdflatex",  # Use pdflatex for generating PDFs
+    'pgf.rcfonts': False,  # Ignore Matplotlib's default font settings
     }
 
+# Note: Don't ask me why but matplotlib will ignore these settings both in
+# rc_contexts and if they are set globally within the plotting function.
+# Ideally, these rcParams should not be adjusted globally but it is the only
+# way it got it to work reliably for the figure legend
 mpl.rcParams['text.latex.preamble'] = \
     "\n".join([r'\usepackage{amsmath}',  # Optional, for math symbols
-               r'\usepackage{siunitx}'])
+               r'\usepackage{siunitx}',
+               # r'\usepackage{times}',  # Times new roman font
+               r"\usepackage[utf8]{inputenc}",
+               r"\usepackage[T1]{fontenc}"])
 mpl.rcParams.update({"pgf.preamble": "\n".join([
+        r'\usepackage{amsmath}',  # Optional, for math symbols
         r"\usepackage[utf8]{inputenc}",
+        # r'\usepackage{times}',  # Times new roman font
         r"\usepackage[T1]{fontenc}",
-        r"\usepackage{amsmath}",
         r"\usepackage[detect-all,locale=DE]{siunitx}",
         ])})
 
