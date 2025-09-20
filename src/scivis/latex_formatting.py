@@ -1,5 +1,4 @@
-"""
-Module for converting unformatted equations into latex math notation
+"""Module for converting unformatted equations into latex math notation.
 
 Offers capabilities to translage typical units into their respective command
 from the siunitx latex package (incl. support of unit prefixes). Also
@@ -8,7 +7,7 @@ offers conversion of label text into latex math notation.
 
 import re
 
-import numpy as np
+__all__ = ["convert_to_siunitx", "ensure_math", "latex_notation"]
 
 # %% SIunitx mappings
 
@@ -118,7 +117,7 @@ siunitx_prefixes_mapping = {
 
 def convert_to_siunitx(unit: str, brackets=True) -> str:
     """
-    Convert a string containing a unit into a siunitx unit command
+    Convert a string containing a unit into a siunitx unit command.
 
     Parameters
     ----------
@@ -170,8 +169,7 @@ def convert_to_siunitx(unit: str, brackets=True) -> str:
 
 
 def ensure_math(text):
-    """
-    Converts a mathematical formula into latex math notation.
+    """Convert a mathematical formula into latex math notation.
 
     Parameters
     ----------
@@ -227,8 +225,7 @@ def ensure_math(text):
 
 
 def latex_notation(lbl="", unit="", brackets=True):
-    """
-    Convert an axis label into latex math notation
+    """Convert an axis label into latex math notation.
 
     Parameters
     ----------
@@ -246,5 +243,4 @@ def latex_notation(lbl="", unit="", brackets=True):
         Axis label in latex math notation.
 
     """
-
     return ensure_math(lbl) + convert_to_siunitx(unit, brackets=brackets)

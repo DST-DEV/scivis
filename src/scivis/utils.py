@@ -8,23 +8,26 @@ ranges, calculate axes parameters and round values.
 import numpy as np
 from numpy.typing import ArrayLike
 
-from scivis import rcparams
+__all__ = ["get_ax_size", "calc_text_pos"]
 
 
 def get_ax_size(fig, ax):
-    """Calculates the axes size in pixels
+    """Calculate the axes size in pixels.
 
-    Parameters:
-        fig (matplotlibe figure):
-            Figure for which to calculate the axes size
-        ax (matplotlibe axes):
-            Axes for which to calculate the axes size
+    Parameters
+    ----------
+    fig : matplotlibe figure
+        Figure for which to calculate the axes size.
+    ax : matplotlibe axes
+        Axes for which to calculate the axes size.
 
-    Returns:
-        width (float):
-            Width of the figure in pixels
-        height (float):
-            height of the figure in pixels
+    Returns
+    -------
+    width : float
+        Width of the figure in pixels.
+    height : float
+        height of the figure in pixels.
+
     """
     bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     width, height = bbox.width, bbox.height
@@ -36,22 +39,24 @@ def get_ax_size(fig, ax):
 def calc_text_pos(ax_lims, ax_size, base_pos, offset=-80):
     """Calculate the position of Text based on an offset in pixels.
 
-    Parameters:
-        ax_lims (array-like):
-            Lower and upper limits of the axis
-        ax_size (float):
-            Size of the axis in pixels
-        base_pos (float):
-            Base position of the text in the unit of the axis ticks
-        offset (float - optional):
-            Desired offset of the text from the base_pos in pixels
-            (default: -80)
+    Parameters
+    ----------
+    ax_lims : ArrayLike
+        Lower and upper limits of the axis.
+    ax_size : ArrayLike
+        Size of the axis in pixels.
+    base_pos: float
+        Base position of the text in the unit of the axis ticks.
+    offset : float, optional
+        Desired offset of the text from the base_pos in pixels.\n
+        Defaults to -80.
 
-    Returns:
-        pos (float):
-            Adjusted position of the text in the unit of the axis ticks
+    Returns
+    -------
+    pos : float
+        Adjusted position of the text in the unit of the axis ticks.
+
     """
-
     val_len = ax_lims[1]-ax_lims[0]
     pixel_pos = (base_pos-ax_lims[0])/val_len*ax_size+offset
     if pixel_pos < 100:
@@ -63,17 +68,22 @@ def calc_text_pos(ax_lims, ax_size, base_pos, offset=-80):
 
     return (pixel_pos)/ax_size*val_len + ax_lims[0]
 
-def round_sig_digits(val, sig_figs=2):
-    """
-    Round a value to a specified number of significant digits
 
-    Args:
-        val (Union[int | float]): Value to round.
-        sig_figs (int, optional): Number of significant digits to round to.
-            Defaults to 2.
+def _round_sig_digits(val, sig_figs=2):
+    """Round a value to a specified number of significant digits.
 
-    Returns:
-        val (Union[int | float]): Rounded value.
+    Parameters
+    ----------
+    val : int or float
+        Value to round.
+    sig_figs : int, optional
+        Number of significant digits to round to.\n
+        Defaults to 2.
+
+    Returns
+    -------
+        val : int or float
+            Rounded value.
 
     """
     if val == 0:
@@ -85,8 +95,7 @@ def _validate_arraylike_numeric(arr: ArrayLike, name: str = "",
                                 ndim: int | None = None,
                                 allow_neg: bool = True,
                                 allow_zero: bool = True):
-    """
-    Validate if a variabe is array-like and contains only numeric values.
+    """Validate if a variabe is array-like and contains only numeric values.
 
     Parameters
     ----------
@@ -159,8 +168,7 @@ def _validate_arraylike_numeric(arr: ArrayLike, name: str = "",
 def _validate_numeric(val: int | float | np.number,
                       allow_neg: bool = True,
                       allow_zero: bool = True):
-    """
-    Validate if a variable is a scalar numeric value.
+    """Validate if a variable is a scalar numeric value.
 
     Parameters
     ----------
@@ -191,8 +199,9 @@ def _validate_numeric(val: int | float | np.number,
         return True
 
 
-def replace_outside_nan(arr, min_val, max_val):
-    """
+def _replace_outside_nan(arr, min_val, max_val):
+    """Replace values outside of range with Nan.
+
     Replace all values in a numpy array that lie outside the range
     [min_val, max_val] with NaN.
 
@@ -205,17 +214,17 @@ def replace_outside_nan(arr, min_val, max_val):
     max_val : float or int
         Maximum allowed value (inclusive).
 
-    Returns
-    -------
-    np.ndarray
-        A new numpy array with out-of-range values replaced by np.nan.
-
     Raises
     ------
     TypeError
         If arr is not a numpy ndarray or min/max are not numeric.
     ValueError
         If arr has more than 2 dimensions or if min_val > max_val.
+
+    Returns
+    -------
+    np.ndarray
+        A new numpy array with out-of-range values replaced by np.nan.
     """
     # --- Input Validation ---
     if not isinstance(arr, np.ndarray):

@@ -1,5 +1,4 @@
-"""
-Module for matplotlib figure and axes formatting
+"""Module for matplotlib figure and axes formatting.
 
 Includes functionalities for line styling, axes formatting and value range
 adjustments.
@@ -18,9 +17,12 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from scivis import rcparams, utils
 from scivis import latex_formatting as ltx
 
+__all__ = []
+
 
 def _prepare_xy_line(x, y):
-    """
+    """Prepare x and y data for a line plot.
+
     Convert the x- & y-data into 2-d arrays and assert matching array sizes.
     Higher-dimensional arrays (ndim>2) are converted to 2d if all dimensions
     except for 2 have length 1.
@@ -38,7 +40,6 @@ def _prepare_xy_line(x, y):
         x-axis values as a 2d array with the same shape as y.
     y : np.ndarray
         y-axis values as a 2d array with the same shape as x.
-
     """
     # Convert x and y to numpy
     x = utils._validate_arraylike_numeric(x)
@@ -71,8 +72,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
                         ax_labels=None, ax_units=None,
                         latex=False, colors=None, cmap=None, alpha=None,
                         linestyles=None, linewidths=None, markers=None):
-    """
-    Prepare the style variables for a line plot with n_lines number of lines.
+    """Prepare style variables for a line plot with n_lines number of lines.
 
     Parameters
     ----------
@@ -141,7 +141,6 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
         Linewidths (1 per line).
     markers : sequence of {None, str}
         Markers (1 per line).
-
     """
     if not isinstance(latex, bool):
         raise TypeError("latex must be a boolean value.")
@@ -312,7 +311,8 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
 
 
 def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
-    """
+    """Assert that a style variable is in the correct format.
+
     Check if a style variable is either a scalar value of None or the required
     type or a sequence of None or the required type.
     If the variable is None, it is converted to a list with length n_lines
@@ -344,7 +344,6 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
     var : list
         List of length n_lines with either the original values from val, or the
         fill_value.
-
     """
     # Prepare type name string
     name_mapping = {str: "String",
@@ -387,8 +386,7 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
 
 def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
                         overflow=False):
-    """
-    Adjusts the value range and axis limits of 2d line plot data.
+    """Adjust the value range and axis limits of 2d line plot data.
 
     Parameters
     ----------
@@ -437,7 +435,6 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
         Filtered y-axis values.
     ax_lims_adjusted : list
         Adjusted axis limits.
-
     """
     # Prepare x & y vakzes
     x, y = _prepare_xy_line(x, y)
@@ -533,12 +530,12 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
 
         if overflow[i]:
             # Enforce data limits until axis limits +- margins
-            data[i, :] = utils.replace_outside_nan(data[i, :],
-                                                   *ax_lims_adjusted[i])
+            data[i, :] = utils._replace_outside_nan(data[i, :],
+                                                    *ax_lims_adjusted[i])
         else:
             # Enforce data limits until axis limits
-            data[i, :] = utils.replace_outside_nan(data[i, :],
-                                                   *ax_lims_wo_margins)
+            data[i, :] = utils._replace_outside_nan(data[i, :],
+                                                    *ax_lims_wo_margins)
 
     x, y = data  # Unpack combined data again
 
@@ -551,8 +548,7 @@ def _format_axes_line(ax, ax_labels=None, ax_lims=None,
                       ax_show_minor_ticks=True, ax_show_grid=True,
                       ax_show_grid_minor=False,
                       profile="fullsize", scale=1):
-    """
-
+    """Format the axes of a line plot.
 
     Parameters
     ----------
@@ -600,12 +596,11 @@ def _format_axes_line(ax, ax_labels=None, ax_lims=None,
     Raises
     ------
     TypeError
-        DESCRIPTION.
+        If ax_show_grid or ax_show_grid_minor are not boolean.\n
 
     Returns
     -------
     None.
-
     """
     # Set axis labels
     if isinstance(ax_labels[0], str):
@@ -654,8 +649,7 @@ def _format_axes_line(ax, ax_labels=None, ax_lims=None,
 
 
 def _format_ticks(ax, which="major", ticks=None, labels=None, limits=None):
-    """
-    Formats the ticks of a selected axis and applies axis limits to the axis.
+    """Format the ticks of a selected axis and applies axis limits to the axis.
 
     Parameters
     ----------
@@ -682,7 +676,6 @@ def _format_ticks(ax, which="major", ticks=None, labels=None, limits=None):
     Returns
     -------
     None.
-
     """
     # Check axis
     if not isinstance(ax, mpl.axes._axes.Axes):
@@ -730,7 +723,8 @@ def _format_ticks(ax, which="major", ticks=None, labels=None, limits=None):
 
 
 def _check_axis_variable(var, name, sort=False, req_len=None):
-    """
+    """Check if an axis variable is in the correct format.
+
     Check if an axis variable is either None or a sequence with two elements
     which each must be either None or a sequence of the required length.
     Optionally, the two sequences can be sorted in ascending order.
@@ -765,7 +759,6 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
     var : list
         List with two elements which each are either None or a sequence of the
         required length.
-
     """
     if not isinstance(sort, bool):
         raise TypeError("sort must be a boolean")
@@ -800,8 +793,8 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
 
 
 def _apply_rcparams_to_axes(ax, latex=False, profile="fullsize", scale=1):
-    """
-    Apply the scivis rcParams to an existing axes.\n
+    """Apply the scivis rcParams to an existing axes.
+
     Note: Not all axes parameters can be changed after its creation. The
     appearance might thus differ to axes created with the scivis rcParams.
 
@@ -818,9 +811,7 @@ def _apply_rcparams_to_axes(ax, latex=False, profile="fullsize", scale=1):
     Returns
     -------
     None.
-
     """
-
     if not isinstance(ax, mpl.axes._axes.Axes):
         raise TypeError("Axis must be a matplotlib axes object.")
 
@@ -887,8 +878,8 @@ def _apply_rcparams_to_axes(ax, latex=False, profile="fullsize", scale=1):
 
 
 def _apply_rcparams_to_figure(fig):
-    """
-    Apply the scivis rcParams to an existing figure.\n
+    """Apply the scivis rcParams to an existing figure.
+
     Note: Not all figure parameters can be changed after its creation. The
     appearance might thus differ to a figure created with the scivis rcParams.
 
@@ -905,9 +896,7 @@ def _apply_rcparams_to_figure(fig):
     Returns
     -------
     None.
-
     """
-
     if not isinstance(fig, mpl.figure.Figure):
         raise TypeError("fig must be a matplotlib figure object.")
 

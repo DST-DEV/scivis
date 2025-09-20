@@ -18,6 +18,8 @@ import scivis.formatting as scifrmt
 import scivis.latex_formatting as ltx
 from scivis import rcparams
 
+__all__ = ["plot_line", "axhline", "axvline"]
+
 
 def plot_line(x, y, ax=None,
               profile="fullsize", scale=1, latex=False,
@@ -31,8 +33,7 @@ def plot_line(x, y, ax=None,
               ax_show_grid_minor=False,
               exp_fld=None, fname=None, ftype=".svg", savefig=False,
               return_obj=False):
-    """
-    Plot one or multiple lines.
+    """Plot one or multiple lines.
 
     Parameters
     ----------
@@ -197,9 +198,7 @@ def plot_line(x, y, ax=None,
     fpath : None | pathlib.Path
         Export file path. If savefig=False or return_obj=False, then None is
         returned.
-
     """
-
     # Prepare plot data
     x, y = scifrmt._prepare_xy_line(x, y)
 
@@ -320,71 +319,74 @@ def plot_line(x, y, ax=None,
 def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
             profile="fullsize", scale=1,
             n_decimals=2, rel_pos_x="left", rel_pos_y="bottom", ls="-."):
-    """Inserts a vertical dashed-dotted line at the specified x-position.
-    a text label can additionally specified via the text parameter or via
+    """Insert a vertical line at the specified x-position.
+
+    A text label can additionally specified via the text parameter or via
     the var_name and var_unit parameter.
 
-    Parameters:
-        ax : matplotlib.axes._axes.Axes:
-            Axes to plot the line onto
-        x : float
-            x-position of the vertical line
-        text : None or str, optional
-            Text label for the axes.\n
-            Alternatively, the variable name can be specified via the
-            var_name parameter.\n
-            The default is False.
-        var_name: None or str, optional
-            Name of the variable on the x-axis. This name is used for the
-            label of the axes.
-            Alternatively, the label text can be specified explicitely
-            via the text parameter. If the text parameter has a value,
-            then it is preferred over the variable name.\n
-            The default is False.
-        var_unit : None or str, optional
-            Unit of the variable on the x-axis. This unit is included in
-            the label of the axes if it is specified via the var_name
-            parameter.
-        latex : bool, optional
-            Selection whether to format use latex text interpretation.\n
-            The default is False.
-        profile : String, optional
-            Profile settings for the scaling.\n
-            - "fullsize": Optimized for using the figure in full size (i.e.
-              width = text width) on A4 paper in portrait\n
-            - "halfsize": Optimized for using the figure in half size (i.e.
-              width = 0.5 * text width) on A4 paper in portrait\n
-            - "partsize": Optimized for using the figure in partial size (i.e.
-              width = factor * text width) on A4 paper in portrait.
-              The parameter 'scale' signifies the scale of the figure on the
-              page\n
-            - "custom_scale": Custom scaling factor for the rcParams\n
-            The default is "fullsize".
-        scale : int | float | np.number, optional
-            Scaling factor of font sizes & padding. Only applied if profile '
-            partsize' or 'custom_scale' is selected. \n
-            The default is 1.
-        n_decimals : int, optional
-            Number of decimal points to display in the text label.
-            Only relevant if the text label is specified via the var_name
-            parameter.
-        rel_pos_x : str, optional
-            x-position of the text label relative to the vertical line.\n
-            - "left": Label is plotted on the left of the line\n
-            - "right": label is plotted on the right of the line\n
-            The default is "left".
-        rel_pos_xy : str, optional
-            y-position of the text label relative to the axes.\n
-            - "bottom": Label is plotted on the lower end of the y-axis\n
-            - "top": label is plotted on the upper end of the y-axis\n
-            The default is "bottom".
-        ls : str, optional
-            Linestyle of the line.\n
-            The default is "-.".
+    Parameters
+    ----------
+    ax : matplotlib.axes._axes.Axes:
+        Axes to plot the line onto
+    x : float
+        x-position of the vertical line
+    text : None or str, optional
+        Text label for the axes.\n
+        Alternatively, the variable name can be specified via the
+        var_name parameter.\n
+        The default is False.
+    var_name: None or str, optional
+        Name of the variable on the x-axis. This name is used for the
+        label of the axes.
+        Alternatively, the label text can be specified explicitely
+        via the text parameter. If the text parameter has a value,
+        then it is preferred over the variable name.\n
+        The default is False.
+    var_unit : None or str, optional
+        Unit of the variable on the x-axis. This unit is included in
+        the label of the axes if it is specified via the var_name
+        parameter.
+    latex : bool, optional
+        Selection whether to format use latex text interpretation.\n
+        The default is False.
+    profile : String, optional
+        Profile settings for the scaling.\n
+        - "fullsize": Optimized for using the figure in full size (i.e.
+          width = text width) on A4 paper in portrait\n
+        - "halfsize": Optimized for using the figure in half size (i.e.
+          width = 0.5 * text width) on A4 paper in portrait\n
+        - "partsize": Optimized for using the figure in partial size (i.e.
+          width = factor * text width) on A4 paper in portrait.
+          The parameter 'scale' signifies the scale of the figure on the
+          page\n
+        - "custom_scale": Custom scaling factor for the rcParams\n
+        The default is "fullsize".
+    scale : int | float | np.number, optional
+        Scaling factor of font sizes & padding. Only applied if profile '
+        partsize' or 'custom_scale' is selected. \n
+        The default is 1.
+    n_decimals : int, optional
+        Number of decimal points to display in the text label.
+        Only relevant if the text label is specified via the var_name
+        parameter.
+    rel_pos_x : str, optional
+        x-position of the text label relative to the vertical line.\n
+        - "left": Label is plotted on the left of the line\n
+        - "right": label is plotted on the right of the line\n
+        The default is "left".
+    rel_pos_xy : str, optional
+        y-position of the text label relative to the axes.\n
+        - "bottom": Label is plotted on the lower end of the y-axis\n
+        - "top": label is plotted on the upper end of the y-axis\n
+        The default is "bottom".
+    ls : str, optional
+        Linestyle of the line.\n
+        The default is "-.".
 
-    Returns:
-        ax : matplotlib.axes._axes.Axes
-            Axes with the line plotted onto them
+    Returns
+    -------
+    ax : matplotlib.axes._axes.Axes
+        Axes with the line plotted onto them
     """
     if not isinstance(latex, bool):
         raise TypeError("latex must be boolean.")
@@ -462,72 +464,76 @@ def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
 
     return ax
 
+
 def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
             profile="fullsize", scale=1,
-            n_decimals=2, rel_pos_x = "left", rel_pos_y ="below", ls="-."):
-    """Inserts a horizontal dashed-dotted line at the specified x-position.
-    a text label can additionally specified via the text parameter or via
+            n_decimals=2, rel_pos_x="left", rel_pos_y="below", ls="-."):
+    """Insert a horizontal line at the specified x-position.
+
+    A text label can additionally specified via the text parameter or via
     the var_name and var_unit parameter.
 
-    Parameters:
-        ax : matplotlib.axes._axes.Axes
-            Axes to plot the line onto
-        y : float
-            y-position of the horizontal line
-        text : None or str, optional
-            Text label for the axes.\n
-            Alternatively, the variable name can be specified via the
-            var_name parameter.\n
-            The default is False.
-        var_name : None or str, optional
-            Name of the variable on the y-axis. This name is used for the
-            label of the axes.
-            Alternatively, the label text can be specified explicitely
-            via the text parameter. If the text parameter has a value,
-            then it is preferred over the variable name.\n
-            The default is False.
-        var_unit: None or str, optional
-            Unit of the variable on the y-axis. This unit is included in
-            the label of the axes if it is specified via the var_name
-            parameter.
-        latex : bool, optional
-            Selection whether to format use latex text interpretation.\n
-            The default is False.
-        profile : String, optional
-            Profile settings for the scaling.\n
-            - "fullsize": Optimized for using the figure in full size (i.e.
-              width = text width) on A4 paper in portrait\n
-            - "halfsize": Optimized for using the figure in half size (i.e.
-              width = 0.5 * text width) on A4 paper in portrait\n
-            - "partsize": Optimized for using the figure in partial size (i.e.
-              width = factor * text width) on A4 paper in portrait.
-              The parameter 'scale' signifies the scale of the figure on the
-              page\n
-            - "custom_scale": Custom scaling factor for the rcParams\n
-            The default is "fullsize".
-        scale : int | float | np.number, optional
-            Scaling factor of font sizes & padding. Only applied if profile '
-            partsize' or 'custom_scale' is selected. \n
-            The default is 1.
-        n_decimals : int, optional
-            Number of decimal points to display in the text label.
-            Only relevant if the text label is specified via the var_name
-            parameter.
-        rel_pos_x : str, optional
-            x-position of the text label relative to the axes.\n
-            - "left": Label is plotted on the left end of the x-axis\n
-            - "right": label is plotted on the right end of the x-axis\n
-            The default is "left".
-        rel_pos_xy : str, optional
-            y-position of the text label relative to the vertical line.\n
-            - "below": Label is plotted below the line\n
-            - "above": label is plotted above the line\n
-            The default is "below".
-        ls : str, optional
-            Linestyle of the line.\n
-            The default is "-.".
+    Parameters
+    ----------
+    ax : matplotlib.axes._axes.Axes
+        Axes to plot the line onto
+    y : float
+        y-position of the horizontal line
+    text : None or str, optional
+        Text label for the axes.\n
+        Alternatively, the variable name can be specified via the
+        var_name parameter.\n
+        The default is False.
+    var_name : None or str, optional
+        Name of the variable on the y-axis. This name is used for the
+        label of the axes.
+        Alternatively, the label text can be specified explicitely
+        via the text parameter. If the text parameter has a value,
+        then it is preferred over the variable name.\n
+        The default is False.
+    var_unit: None or str, optional
+        Unit of the variable on the y-axis. This unit is included in
+        the label of the axes if it is specified via the var_name
+        parameter.
+    latex : bool, optional
+        Selection whether to format use latex text interpretation.\n
+        The default is False.
+    profile : String, optional
+        Profile settings for the scaling.\n
+        - "fullsize": Optimized for using the figure in full size (i.e.
+          width = text width) on A4 paper in portrait\n
+        - "halfsize": Optimized for using the figure in half size (i.e.
+          width = 0.5 * text width) on A4 paper in portrait\n
+        - "partsize": Optimized for using the figure in partial size (i.e.
+          width = factor * text width) on A4 paper in portrait.
+          The parameter 'scale' signifies the scale of the figure on the
+          page\n
+        - "custom_scale": Custom scaling factor for the rcParams\n
+        The default is "fullsize".
+    scale : int | float | np.number, optional
+        Scaling factor of font sizes & padding. Only applied if profile '
+        partsize' or 'custom_scale' is selected. \n
+        The default is 1.
+    n_decimals : int, optional
+        Number of decimal points to display in the text label.
+        Only relevant if the text label is specified via the var_name
+        parameter.
+    rel_pos_x : str, optional
+        x-position of the text label relative to the axes.\n
+        - "left": Label is plotted on the left end of the x-axis\n
+        - "right": label is plotted on the right end of the x-axis\n
+        The default is "left".
+    rel_pos_xy : str, optional
+        y-position of the text label relative to the vertical line.\n
+        - "below": Label is plotted below the line\n
+        - "above": label is plotted above the line\n
+        The default is "below".
+    ls : str, optional
+        Linestyle of the line.\n
+        The default is "-.".
 
-    Returns:
+    Returns
+    -------
         ax : matplotlib.axes._axes.Axes
             Axes with the line plotted onto them
     """

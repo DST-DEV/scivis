@@ -190,8 +190,7 @@ scale_factor = .65
 
 
 def _prepare_rcparams(latex=False, profile="fullsize", scale=1):
-    """
-    Assembles the individual rcParam dicts to a single dictionary.
+    """Assembles the individual rcParam dicts to a single dictionary.
 
     Parameters
     ----------
@@ -222,7 +221,6 @@ def _prepare_rcparams(latex=False, profile="fullsize", scale=1):
     -------
     rc_profile : dict
         Scaled and assembled rcParams dict.
-
     """
     if not isinstance(profile, str):
         raise TypeError("profile must be a string.")
@@ -255,8 +253,8 @@ def _prepare_rcparams(latex=False, profile="fullsize", scale=1):
 
 
 def _scale_dict_params(param_dict, profile="fullsize", scale=1):
-    """
-    Scales the size parameters from the param_dict for a chosen profile.
+    """Scales the size parameters from the param_dict for a chosen profile.
+
     Automatically selects the rcParams associated with font sizes & padding
     and scales them according to the inputs.
 
@@ -287,9 +285,7 @@ def _scale_dict_params(param_dict, profile="fullsize", scale=1):
     -------
     param_dict_scaled : dict
         rcParams with scaled values.
-
     """
-
     param_dict_scaled = param_dict.copy()
 
     if profile != "fullsize":
