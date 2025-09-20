@@ -1,3 +1,3 @@
-from scivis.plotting import plot_line
+from scivis.plotting import plot_line, axvline, axhline
 
-__all__ = ["plot_line"]
+__all__ = ["plot_line", "axvline", "axhline"]
