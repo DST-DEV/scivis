@@ -97,7 +97,7 @@ rcparams_legend = {
     'legend.edgecolor': '0.8',
     'legend.facecolor': (1, 1, 1, .2),
     'legend.fancybox': True,
-    'legend.fontsize': 28,
+    'legend.fontsize': 22,
     'legend.framealpha': 0.8,
     'legend.frameon': True,
     'legend.handleheight': 0.7,
@@ -285,7 +285,7 @@ def _scale_dict_params(param_dict, profile="fullsize", scale=1):
 
     if profile != "fullsize":
         if profile == "halfsize":
-            scale = 2
+            scale = .5
         else:
             if not utils._validate_numeric(scale, allow_neg=False,
                                            allow_zero=False):
@@ -293,7 +293,7 @@ def _scale_dict_params(param_dict, profile="fullsize", scale=1):
                                  "non-negative positive numeric value.")
 
         if profile in ("partsize", "halfsize"):
-            scale = (scale-1)*scale_factor + 1  # Empirical scale
+            scale = (1/scale-1)*scale_factor + 1  # Empirical scale
 
         param_dict_scaled = {key: (val * scale
                                    if (key.endswith(("size", "pad", "width",
