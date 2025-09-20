@@ -238,6 +238,15 @@ def _prepare_rcparams(latex=False, profile="fullsize", scale=1):
     rc_profile = _scale_dict_params(rc_profile, profile=profile, scale=scale)
 
     if latex:
+        # Scale font sizes again (since latex handles them a bit differently)
+        latex_scale_factor = 1.2
+        rc_profile = {key: (val * latex_scale_factor
+                            if (key.endswith(("size"))
+                                and isinstance(val, (int, float, np.number)))
+                            else val)
+                      for key, val in rc_profile.items()
+                      }
+
         rc_profile.update(latex_text_profile)
     else:
         rc_profile.update(default_text_profile)
