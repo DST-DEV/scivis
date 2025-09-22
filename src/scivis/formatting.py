@@ -5,7 +5,6 @@ adjustments.
 """
 
 # Built-in packages
-from collections.abc import Sequence
 import warnings
 
 # Third-party packages
@@ -158,7 +157,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
     # Format axis labels & units
     if ax_labels is None:
         axis_labels = [None, None]
-    elif isinstance(ax_labels, (Sequence, np.ndarray)):
+    elif isinstance(ax_labels, (tuple, list, np.ndarray)):
         if not len(ax_labels) == 2:
             raise ValueError("Invalid number of axis labels. Must be length 2")
 
@@ -167,7 +166,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
             raise TypeError("Invalid element type for ax_labels parameter. "
                             "Must be a Sequence of str or None.")
 
-        if isinstance(ax_units, (Sequence, np.ndarray)):
+        if isinstance(ax_units, (tuple, list, np.ndarray)):
             if not len(ax_units) == 2:
                 raise ValueError("Invalid number of axis units. "
                                  + "Must be length 2.")
@@ -286,7 +285,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
             markers = [rcparams.mss[markers]]*n_lines
         else:
             markers = [dict(marker=markers)]*n_lines
-    elif isinstance(markers, (Sequence, np.ndarray)):
+    elif isinstance(markers, (tuple, list, np.ndarray)):
         if len(markers) == 0:
             markers = [None]*n_lines
         elif len(markers) == n_lines:
@@ -366,7 +365,7 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
         var = [fill_value]*n_lines
     elif isinstance(var, req_type):
         var = [var]*n_lines
-    elif isinstance(var, (Sequence, np.ndarray)) and len(var) > 0:
+    elif isinstance(var, (tuple, list, np.ndarray)) and len(var) > 0:
         if len(var) == n_lines:
             if not all(isinstance(var_i, req_type) for var_i in var):
                 raise TypeError("Invalid element type for " + name
@@ -446,7 +445,7 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     # Check entries for margins selection
     if isinstance(margins, bool):
         margins = (margins, margins)
-    elif not isinstance(margins, (Sequence, np.ndarray)) or \
+    elif not isinstance(margins, (tuple, list, np.ndarray)) or \
             not all(isinstance(m, bool) for m in margins):
         raise TypeError("margins must be boolean or a sequence of "
                         "booleans.")
@@ -459,7 +458,7 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     if any(margins):
         if isinstance(overflow, bool):
             overflow = (overflow, overflow)
-        elif not isinstance(overflow, (Sequence, np.ndarray)) or \
+        elif not isinstance(overflow, (tuple, list, np.ndarray)) or \
                 not all(isinstance(o, bool) for o in overflow):
             raise TypeError("overflow must be boolean or a sequence of "
                             "booleans.")
@@ -768,10 +767,11 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
 
     if var is None:
         var = [None, None]
-    elif isinstance(var, (Sequence, np.ndarray)):
+    elif isinstance(var, (tuple, list, np.ndarray)):
         if not len(var) == 2:
             raise ValueError("Invalid number of elements for " + name + ". "
-                             + "Must be a Sequence with two elements.")
+                             "Must be a tuple, list or numpy array with "
+                             "two elements.")
 
         var = list(var)
         for i in range(2):
