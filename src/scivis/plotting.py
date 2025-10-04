@@ -1,4 +1,5 @@
-"""
+"""Matplotlib-based scientific visualisation package.
+
 Scivis is a highly customizeable and at the same time low effort visualisation
 package for scientific purposes. It offers default plot settings for common
 plots in scientific reports as well as full customization if necessary. All of
@@ -12,17 +13,118 @@ from pathlib import Path
 # Third-party packages
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 
 # User-defined packages
 import scivis.formatting as scifrmt
+import scivis.utils as sciutils
 import scivis.latex_formatting as ltx
 from scivis import rcparams
 
-__all__ = ["plot_line", "axhline", "axvline"]
+__all__ = ["subplots", "plot_line", "axhline", "axvline"]
+
+
+def subplots(nrows=1, ncols=1,  profile="fullsize", scale=1, latex=False,
+             **kwargs):
+    """Plot one or multiple lines.
+
+    Parameters
+    ----------
+    nrows : int, optional
+        Number of rows of the subplot grid.\n
+        The default is 1
+    ncols : int, optional
+        Number of columns of the subplot grid.\n
+        The default is 1
+    profile : String, optional
+        Profile settings for the scaling.\n
+        - "fullsize": Optimized for using the figure in full size (i.e.
+          width = text width) on A4 paper in portrait\n
+        - "halfsize": Optimized for using the figure in half size (i.e.
+          width = 0.5 * text width) on A4 paper in portrait\n
+        - "partsize": Optimized for using the figure in partial size (i.e.
+          width = factor * text width) on A4 paper in portrait.
+          The parameter 'scale' signifies the scale of the figure on the page\n
+        - "custom_scale": Custom scaling factor for the rcParams\n
+        The default is "fullsize".
+    scale : int | float | np.number, optional
+        Scaling factor of font sizes & padding. Only applied if profile '
+        partsize' or 'custom_scale' is selected. \n
+        The default is 1.
+    latex : bool, optional
+        Selection whether to format use latex text interpretation.\n
+        The default is False.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure object.
+    ax : matplotlib.axes._axes.Axes | list
+        List of matplotlib.axes._axes.Axes objects or a single axes object, if
+        nrows=1 and ncols=1.
+    """
+    if not all(isinstance(n, (int, np.integer)) for n in (nrows, ncols)):
+        raise TypeError("Number of rows and columns must be integers")
+
+    if not isinstance(profile, str):
+        raise TypeError("profile must be a string.")
+
+    if not isinstance(latex, bool):
+        raise TypeError("latex must be a boolean value.")
+
+    if "figsize" not in kwargs.keys():
+        figsize = rcparams.rcparams_figure["figure.figsize"]
+        kwargs["figsize"] = (figsize[0]*ncols, figsize[1]*nrows)
+
+    # Determine scale factor for the rcParams (based on ncols & figure size)
+    figscale = max(kwargs["figsize"][0] / ncols
+                   / rcparams.rcparams_figure["figure.figsize"][0],
+                   kwargs["figsize"][1] / nrows
+                   / rcparams.rcparams_figure["figure.figsize"][1])
+    scale_sub = 1/ncols * 1 / figscale
+    if profile == "fullsize":
+        profile_sub = "partsize"
+    elif profile == "halfsize":
+        scale_sub *= .5
+    else:
+        if not sciutils._validate_numeric(scale, allow_neg=False,
+                                          allow_zero=False):
+            raise ValueError("scale factor must be a scalar "
+                             "non-negative positive numeric value.")
+        if profile == "partsize":
+            profile_sub = "partsize"
+
+        scale_sub *= scale
+
+    rc_profile = rcparams._prepare_rcparams(latex=latex, profile=profile_sub,
+                                            scale=scale_sub)
+
+    if latex:
+        # Save current rcParams
+        rcparams_or = {
+            "text.usetex": mpl.rcParams["text.usetex"],
+            "pgf.texsystem": mpl.rcParams["pgf.texsystem"],
+            "pgf.rcfonts": mpl.rcParams["pgf.rcfonts"],
+            "text.latex.preamble": mpl.rcParams["text.latex.preamble"],
+            "pgf.preamble": mpl.rcParams["pgf.preamble"],
+            }
+
+        # Note: These parameters are also part of the rc_profile. However,
+        # leegends in matplotlib apparently ignore the rc_context settings.
+        # Therefore they are changed globally and restored after plotting
+        plt.rcParams.update(rcparams.latex_text_profile)
+
+    with mpl.rc_context(rc_profile):
+        fig, ax = plt.subplots(nrows=nrows, ncols=ncols, **kwargs)
+
+    if latex:
+        # Restore original rcParams
+        plt.rcParams.update(rcparams_or)
+
+    return fig, ax
 
 
 def plot_line(x, y, ax=None,
-              profile="fullsize", scale=1, latex=False,
               plt_labels=None, show_legend=True, ax_labels=None, ax_units=None,
               colors=None, cmap=None, alpha=None,
               linestyles=None, linewidths=None, markers=None,
@@ -31,6 +133,8 @@ def plot_line(x, y, ax=None,
               ax_ticks_minor=None, ax_tick_lbls_minor=None,
               ax_show_minor_ticks=True, ax_show_grid=True,
               ax_show_grid_minor=False,
+              profile="fullsize", scale=1, latex=False,
+              override_axes_settings=False,
               exp_fld=None, fname=None, ftype=".svg", savefig=False,
               return_obj=False):
     """Plot one or multiple lines.
@@ -52,24 +156,6 @@ def plot_line(x, y, ax=None,
     ax : matplotlib.axes._axes.Axes, optional
         Axes to plot the data on. If None is given, a new figure is created.\n
         The default is None.
-    profile : String, optional
-        Profile settings for the scaling.\n
-        - "fullsize": Optimized for using the figure in full size (i.e.
-          width = text width) on A4 paper in portrait\n
-        - "halfsize": Optimized for using the figure in half size (i.e.
-          width = 0.5 * text width) on A4 paper in portrait\n
-        - "partsize": Optimized for using the figure in partial size (i.e.
-          width = factor * text width) on A4 paper in portrait.
-          The parameter 'scale' signifies the scale of the figure on the page\n
-        - "custom_scale": Custom scaling factor for the rcParams\n
-        The default is "fullsize".
-    scale : int | float | np.number, optional
-        Scaling factor of font sizes & padding. Only applied if profile '
-        partsize' or 'custom_scale' is selected. \n
-        The default is 1.
-    latex : bool, optional
-        Selection whether to format use latex text interpretation.\n
-        The default is False.
     plt_labels : None | Sequence of str, optional
         Labels for each of the lines. The default is None.
     show_legend : bool, optional
@@ -154,6 +240,29 @@ def plot_line(x, y, ax=None,
     ax_show_grid_minor : bool, optional
         Selection whether to show minor gird lines. If ax_show_grid is False,
         the minor grid lines are automatically deactivated as well.\n
+        The default is False.
+    profile : String, optional
+        Profile settings for the scaling.\n
+        - "fullsize": Optimized for using the figure in full size (i.e.
+          width = text width) on A4 paper in portrait\n
+        - "halfsize": Optimized for using the figure in half size (i.e.
+          width = 0.5 * text width) on A4 paper in portrait\n
+        - "partsize": Optimized for using the figure in partial size (i.e.
+          width = factor * text width) on A4 paper in portrait.
+          The parameter 'scale' signifies the scale of the figure on the page\n
+        - "custom_scale": Custom scaling factor for the rcParams\n
+        The default is "fullsize".
+    scale : int | float | np.number, optional
+        Scaling factor of font sizes & padding. Only applied if profile '
+        partsize' or 'custom_scale' is selected. \n
+        The default is 1.
+    latex : bool, optional
+        Selection whether to format use latex text interpretation.\n
+        The default is False.
+    override_axes_profile : bool, optional
+        Whether the profile settings of the axis should be overwritten, when an
+        axes object is passed via the ax parameter.\n
+        Note that this does not affect the settings for the latex selection.\n
         The default is False.
     exp_fld : None | str | pathlib.Path, optional
         Export folder to save the figure into. If None is given, the current
@@ -241,6 +350,9 @@ def plot_line(x, y, ax=None,
             fig, ax = plt.subplots()
         elif isinstance(ax, mpl.axes._axes.Axes):
             fig = ax.figure
+            if override_axes_settings:
+                scifrmt._apply_rcparams_to_axes(ax, latex=latex,
+                                                profile=profile, scale=scale)
         else:
             raise TypeError("Axis must be a matplotlib axes object or None.")
 
@@ -312,8 +424,9 @@ def plot_line(x, y, ax=None,
     if return_obj:
         return fig, ax, fpath
     else:
-        return None, None, None
         plt.close(fig)
+        return None, None, None
+
 
 
 def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,

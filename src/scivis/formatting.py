@@ -60,9 +60,9 @@ def _prepare_xy_line(x, y):
                                  "2d arrays")
 
         if x.ndim == 1:
-            x = np.tile(x.flatten(), (y.shape[0], 1))
+            x = np.tile(x, (y.shape[0], 1))
         if y.ndim == 1:
-            y = np.tile(y.flatten(), (x.shape[0], 1))
+            y = np.tile(y, (x.shape[0], 1))
 
     return x, y
 

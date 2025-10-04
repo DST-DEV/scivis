@@ -288,6 +288,9 @@ def _scale_dict_params(param_dict, profile="fullsize", scale=1):
     """
     param_dict_scaled = param_dict.copy()
 
+    if not isinstance(profile, str):
+        raise TypeError("profile must be a string.")
+
     if profile != "fullsize":
         if profile == "halfsize":
             scale = .5
