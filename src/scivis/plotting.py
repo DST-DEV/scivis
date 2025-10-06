@@ -421,7 +421,8 @@ def plot_line(x, y, ax=None,
 
 def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
             profile="fullsize", scale=1,
-            n_decimals=2, rel_pos_x="left", rel_pos_y="bottom", ls="-."):
+            n_decimals=2, rel_pos_x="left", rel_pos_y="bottom",
+            ls="-.", c="k"):
     """Insert a vertical line at the specified x-position.
 
     A text label can additionally specified via the text parameter or via
@@ -485,11 +486,16 @@ def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
     ls : str, optional
         Linestyle of the line.\n
         The default is "-.".
+    c : str | (tuple, list, np.ndarray), optional
+        Color. Accepts any valid matplotlib color format.\n
+        The default is "k".
 
     Returns
     -------
-    ax : matplotlib.axes._axes.Axes
-        Axes with the line plotted onto them
+    vline : matplotlib.lines.Line2D
+        2D line vertical line
+    note : None | matplotlib.text.Annotation
+        Annotation of the line or None if no label was specified.
     """
     if not isinstance(latex, bool):
         raise TypeError("latex must be boolean.")
@@ -550,27 +556,30 @@ def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
             raise ValueError("Relative y-position must be 'bottom' or "
                              + "'top")
 
+    # Prepare color
+    c = mpl.colors.to_hex(c)
+
     # Prepare rcParam settings
     rc_profile = rcparams._prepare_rcparams(latex=latex, profile=profile,
                                             scale=scale)
 
     with mpl.rc_context(rc_profile):
-        ax.axvline(x, ls=ls)
+        vline = ax.axvline(x, ls=ls, c=c)
         if label:
             arrowstyle = dict(arrowstyle="-", alpha=0)
-            ax.annotate(text=label,
-                        xy=(x, y),
-                        xytext=(x_text, y_text), textcoords="offset points",
-                        rotation="vertical", ha=ha, va=va,
-                        arrowprops=arrowstyle,
-                        bbox=dict(facecolor='w', alpha=0.4, ls="none"))
+            note = ax.annotate(
+                text=label, xy=(x, y),
+                xytext=(x_text, y_text),  textcoords="offset points",
+                rotation="vertical", ha=ha, va=va, arrowprops=arrowstyle,
+                bbox=dict(facecolor='w', alpha=0.4, ls="none"), c=c)
 
-    return ax
+    return vline, note
 
 
 def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
             profile="fullsize", scale=1,
-            n_decimals=2, rel_pos_x="left", rel_pos_y="below", ls="-."):
+            n_decimals=2, rel_pos_x="left", rel_pos_y="below",
+            ls="-.", c="k"):
     """Insert a horizontal line at the specified x-position.
 
     A text label can additionally specified via the text parameter or via
@@ -634,11 +643,16 @@ def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
     ls : str, optional
         Linestyle of the line.\n
         The default is "-.".
+    c : str | (tuple, list, np.ndarray), optional
+        Color. Accepts any valid matplotlib color format.\n
+        The default is "k".
 
     Returns
     -------
-        ax : matplotlib.axes._axes.Axes
-            Axes with the line plotted onto them
+    hline : matplotlib.lines.Line2D
+        2D line vertical line
+    note : None | matplotlib.text.Annotation
+        Annotation of the line or None if no label was specified.
     """
     if not isinstance(latex, bool):
         raise TypeError("latex must be boolean.")
@@ -687,19 +701,21 @@ def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
 
     arrowstyle = dict(arrowstyle="-", alpha=0)
 
+    # Prepare color
+    c = mpl.colors.to_hex(c)
+
     # Prepare rcParam settings
     rc_profile = rcparams._prepare_rcparams(latex=latex, profile=profile,
                                             scale=scale)
 
     with mpl.rc_context(rc_profile):
-        ax.axhline(y, ls=ls)
+        hline = ax.axhline(y, ls=ls, c=c)
         if label:
             arrowstyle = dict(arrowstyle="-", alpha=0)
-            ax.annotate(text=label,
-                        xy=(x, y),
-                        xytext=(x_text, y_text), textcoords="offset points",
-                        ha=rel_pos_x, va=va,
-                        arrowprops=arrowstyle,
-                        bbox=dict(facecolor='w', alpha=0.4, ls="none"))
+            note = ax.annotate(
+                text=label, xy=(x, y),
+                xytext=(x_text, y_text), textcoords="offset points",
+                ha=rel_pos_x, va=va, arrowprops=arrowstyle,
+                bbox=dict(facecolor='w', alpha=0.4, ls="none"), c=c)
 
-    return ax
+    return hline, note
