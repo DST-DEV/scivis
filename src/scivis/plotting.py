@@ -93,6 +93,7 @@ def subplots(nrows=1, ncols=1,  profile="fullsize", scale=1, latex=False,
                              "non-negative positive numeric value.")
         if profile == "partsize":
             profile_sub = "partsize"
+        else:
 
         scale_sub *= scale
 
@@ -422,7 +423,8 @@ def plot_line(x, y, ax=None,
 def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
             profile="fullsize", scale=1,
             n_decimals=2, rel_pos_x="left", rel_pos_y="bottom",
-            ls="-.", c="k"):
+            ls="-.", c="k",
+            margin=None, margin_alpha=.2, c_margin="inherit"):
     """Insert a vertical line at the specified x-position.
 
     A text label can additionally specified via the text parameter or via
@@ -489,13 +491,26 @@ def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
     c : str | (tuple, list, np.ndarray), optional
         Color. Accepts any valid matplotlib color format.\n
         The default is "k".
+    margin: None, (tuple, list, np.ndarray) of (int, float, np.number), optional
+        Margin widths around the vertical line in the form {left width,
+        right width}. If None is given, no margins are displayed.\n
+        The default is None.
+    margin_alpha : (int, float, np.number), optional
+        Transparency of the margin highlight
+    c_margin : str | (tuple, list, np.ndarray), optional
+        Color of the margin. Accepts any valid matplotlib color format.\n
+        Alternatively, "inherit" can be used to use the color of the line.\n
+        The default is "inherit".
 
     Returns
     -------
     vline : matplotlib.lines.Line2D
-        2D line vertical line
+        2D line vertical line.
     note : None | matplotlib.text.Annotation
         Annotation of the line or None if no label was specified.
+    margin_rect : None | matplotlib.patches.Rectangle
+        Rectangle with margins around the x-value or None if no margins were
+        specified.
     """
     if not isinstance(latex, bool):
         raise TypeError("latex must be boolean.")
@@ -559,27 +574,67 @@ def axvline(ax, x, text=None, var_name=None, var_unit=None, latex=False,
     # Prepare color
     c = mpl.colors.to_hex(c)
 
+    # Check margin value
+    margin = scifrmt._check_style_variable(margin, name="margin",
+                                           req_type=(int, float, np.number),
+                                           n_elem=2)
+    margin = [margin_i if margin_i is not None else 0 for margin_i in margin]
+    if any(margin_i < 0 for margin_i in margin):
+        raise ValueError("Margin widths must be positive.")
+
+    if margin[1] + margin[0] > 0:
+        # Check margin alpha value
+        if not sciutils._validate_numeric(margin_alpha, allow_neg=False) \
+                or margin_alpha>1:
+            raise ValueError("Margin alpha must be a numeric value within "
+                             "[0, 1].")
+
+        # Check margin color
+        if isinstance(c_margin, str) and c_margin == "inherit":
+            c_margin = c
+        else:
+            c_margin = mpl.colors.to_hex(c_margin)
+
     # Prepare rcParam settings
     rc_profile = rcparams._prepare_rcparams(latex=latex, profile=profile,
                                             scale=scale)
 
     with mpl.rc_context(rc_profile):
         vline = ax.axvline(x, ls=ls, c=c)
+        if margin[1] + margin[0] > 0:
+            margin_rect = mpl.patches.Rectangle(
+                (x-margin[0], ax.get_ylim()[0]),
+                margin[0]+margin[1], ax.get_ylim()[1] - ax.get_ylim()[0],
+                ec='none', fc=c_margin)
+            margin_rect.set_alpha(margin_alpha)
+            ax.add_patch(margin_rect)
+        else:
+            margin_rect = None
+
         if label:
+            bbox = None
+            if margin_alpha<1:
+                if not ((margin[0] > 0 and x_text < 0)
+                        or (margin[1] > 0 and x_text > 0)):
+                    bbox=dict(facecolor='w', alpha=0.4, ls="none")
+
             arrowstyle = dict(arrowstyle="-", alpha=0)
             note = ax.annotate(
                 text=label, xy=(x, y),
                 xytext=(x_text, y_text),  textcoords="offset points",
                 rotation="vertical", ha=ha, va=va, arrowprops=arrowstyle,
-                bbox=dict(facecolor='w', alpha=0.4, ls="none"), c=c)
+                bbox=bbox, c=c)
+        else:
+            note = None
 
-    return vline, note
+    return vline, note, margin_rect
 
 
 def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
             profile="fullsize", scale=1,
             n_decimals=2, rel_pos_x="left", rel_pos_y="below",
-            ls="-.", c="k"):
+            ls="-.", c="k",
+            margin=None, margin_alpha=.2):
     """Insert a horizontal line at the specified x-position.
 
     A text label can additionally specified via the text parameter or via
@@ -646,13 +701,26 @@ def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
     c : str | (tuple, list, np.ndarray), optional
         Color. Accepts any valid matplotlib color format.\n
         The default is "k".
+    margin: None, (tuple, list, np.ndarray) of (int, float, np.number), optional
+        Margin limits around the horizontal line in the form {lower limit,
+        upper limit}. If None is given, no margins are displayed.\n
+        The default is None.
+    margin_alpha : (int, float, np.number), optional
+        Transparency of the margin highlight
+    c_margin : str | (tuple, list, np.ndarray), optional
+        Color of the margin. Accepts any valid matplotlib color format.\n
+        Alternatively, "inherit" can be used to use the color of the line.\n
+        The default is "inherit".
 
     Returns
     -------
     hline : matplotlib.lines.Line2D
-        2D line vertical line
+        2D line vertical line.
     note : None | matplotlib.text.Annotation
         Annotation of the line or None if no label was specified.
+    margin_rect : None | matplotlib.patches.Rectangle
+        Rectangle with margins around the x-value or None if no margins were
+        specified.
     """
     if not isinstance(latex, bool):
         raise TypeError("latex must be boolean.")
@@ -699,7 +767,18 @@ def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
             raise ValueError("Relative y-position must be 'below' or "
                              + "'above'")
 
-    arrowstyle = dict(arrowstyle="-", alpha=0)
+    # Check margin value
+    margin = scifrmt._check_style_variable(margin, name="margin",
+                                           req_type=(int, float, np.number),
+                                           n_elem=2)
+    margin = [margin_i if margin_i is not None else 0 for margin_i in margin]
+    if any(margin_i < 0 for margin_i in margin):
+        raise ValueError("Margin widths must be positive.")
+
+    # Check margin alpha value
+    if not sciutils._validate_numeric(margin_alpha, allow_neg=False) \
+            or margin_alpha>1:
+        raise ValueError("Margin alpha must be a numeric value within [0, 1].")
 
     # Prepare color
     c = mpl.colors.to_hex(c)
@@ -710,12 +789,31 @@ def axhline(ax, y, text=None, var_name=None, var_unit=None, latex=False,
 
     with mpl.rc_context(rc_profile):
         hline = ax.axhline(y, ls=ls, c=c)
+
+        if margin[1] + margin[0] > 0:
+            margin_rect = mpl.patches.Rectangle(
+                (ax.get_xlim()[0], y-margin[0]),
+                ax.get_xlim()[1] - ax.get_xlim()[0], margin[0]+margin[1],
+                ec='none', fc=c)
+            margin_rect.set_alpha(margin_alpha)
+            ax.add_patch(margin_rect)
+        else:
+            margin_rect = None
+
         if label:
+            bbox = None
+            if margin_alpha<1:
+                if not ((margin[0] > 0 and y_text < 0)
+                        or (margin[1] > 0 and y_text > 0)):
+                    bbox=dict(facecolor='w', alpha=0.4, ls="none")
+
             arrowstyle = dict(arrowstyle="-", alpha=0)
             note = ax.annotate(
                 text=label, xy=(x, y),
                 xytext=(x_text, y_text), textcoords="offset points",
                 ha=rel_pos_x, va=va, arrowprops=arrowstyle,
-                bbox=dict(facecolor='w', alpha=0.4, ls="none"), c=c)
+                bbox=bbox, c=c)
+        else:
+            note = None
 
-    return hline, note
+    return hline, note, margin_rect
