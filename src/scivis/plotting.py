@@ -155,19 +155,19 @@ def plot_line(x, y, ax=None,
     ax : matplotlib.axes._axes.Axes, optional
         Axes to plot the data on. If None is given, a new figure is created.\n
         The default is None.
-    plt_labels : None | Sequence of str, optional
+    plt_labels : None | (tuple, list, np.ndarray) of str, optional
         Labels for each of the lines. The default is None.
     show_legend : bool, optional
         Selection whether a legend should be displayed. If no labels are
         specified via plt_labels, default names "var_<i>" are assigned for each
         line.\n
         The default is True.
-    ax_labels : None | Sequence of str, optional
+    ax_labels : None | (tuple, list, np.ndarray) of str, optional
         Axis labels. Must be either None or a list of two Nones / strings.\n
         The default is None.
-    ax_units : None | Sequence of str, optional
+    ax_units : None | (tuple, list, np.ndarray) of str, optional
         Axis units. Must be either None or a list of two Nones / strings.\n
-    colors : None | str | sequence, optional
+    colors : None | str | (tuple, list, np.ndarray), optional
         Line colors. Can be specified either as a single color which is applied
         globally to all lines, or as a sequence with one color for each line.
         Accepts any valid matplotlib color format.
@@ -175,23 +175,23 @@ def plot_line(x, y, ax=None,
     cmap : None | str, optional
         Colormap to apply to the lines. This overwrites the color parameter.\n
         The default is None.
-    alpha : None | int | float | sequence of {int, float, numpy.number}, optional
+    alpha : None | int | float | (tuple, list, np.ndarray) of {int, float, numpy.number}, optional
         Transparency values. Can be specified either as a scalar global value
         or individually as a sequence with one element for each line.\n
         The default is None.
-    linestyles : None | str | sequence of str, optional
+    linestyles : None | str | (tuple, list, np.ndarray) of str, optional
         Linestyles. Can be specified either as a scalar global value
         or individually as a sequence with one element for each line.\n
         The default is None.
-    linewidths : None | int | float | sequence of {int, float, numpy.number}, optional
+    linewidths : None | int | float | (tuple, list, np.ndarray) of {int, float, numpy.number}, optional
         Linewidths. Can be specified either as a scalar global value
         or individually as a sequence with one element for each line.\n
         The default is None.
-    markers : None | Sequence of str, optional
+    markers : None | (tuple, list, np.ndarray) of str, optional
         Linewidths. Can be specified either as a scalar global value
         or individually as a sequence with one element for each line.\n
         The default is None.
-    ax_lims : None | Sequence, optional
+    ax_lims : None | (tuple, list, np.ndarray), optional
         Axis limits for the x- and y-axis. Must be either None or a 2-element
         Sequence in which each element is a 2-element Sequence consisting of
         the lower & upper axis limit.\n
@@ -200,7 +200,7 @@ def plot_line(x, y, ax=None,
         applies to the elements of the sequence if limits should only be
         specified for one oxis.\n
         The default is None.
-    margins : bool | Sequence, optional
+    margins : bool | (tuple, list, np.ndarray), optional
         Selection whether margins around the data should be displayed. \n
         Can either be specified globally as a single boolean, or individually
         for the x- and y-axis by providing a sequence with two boolean
@@ -214,7 +214,7 @@ def plot_line(x, y, ax=None,
         specified and no y-axis limits are given (If y-axis limits are
         specified, they overwrite this parameters).\n
         The default is True.
-    overflow : bool | Sequence, optional
+    overflow : bool | (tuple, list, np.ndarray), optional
         Selection whether overflow of the plotted values into the margins are
         allowed. This applies in the case that axis limits are specified and
         margins is set to true for at least one axis.\n
@@ -222,13 +222,13 @@ def plot_line(x, y, ax=None,
         for the x- and y-axis by providing a sequence with two boolean
         values.\n
         The default is True.
-    ax_ticks : None | sequence {int, float, np.number}, optional
+    ax_ticks : None | (tuple, list, np.ndarray) {int, float, np.number}, optional
         Major tick mark positions. The default is None.
-    ax_tick_lbls : None | sequence {int, float, np.number, str}, optional
+    ax_tick_lbls : None | (tuple, list, np.ndarray) {int, float, np.number, str}, optional
         Major tick labels. The default is None.
-    ax_ticks_minor : None | sequence {int, float, np.number}, optional
+    ax_ticks_minor : None | (tuple, list, np.ndarray) {int, float, np.number}, optional
         Minor tick mark positions. The default is None.
-    ax_tick_lbls_minor : None | sequence {int, float, np.number, str}, optional
+    ax_tick_lbls_minor : None | (tuple, list, np.ndarray) {int, float, np.number, str}, optional
         Minor tick labels. The default is None.
     ax_show_minor_ticks : bool, optional
         Selection whether to show major ticks.\n
