@@ -281,7 +281,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
     if markers is None:
         markers = [{"marker": None}]*n_lines
     elif isinstance(markers, str) and len(markers) > 0:
-        if markers in rcparams.mss.keys():
+        if markers in rcparams.mss:
             markers = [rcparams.mss[markers]]*n_lines
         else:
             markers = [dict(marker=markers)]*n_lines
@@ -295,7 +295,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
 
             markers = []
             for i in range(n_lines):
-                if markers[i] in rcparams.mss.keys():
+                if markers[i] in rcparams.mss:
                     markers.append(rcparams.mss[markers[i]])
                 else:
                     markers.append(dict(marker=markers[i]))
@@ -351,7 +351,7 @@ def _check_style_variable(var, name, req_type, n_elem, fill_value=None):
                     (int, float, np.number): "numerical value"
                     }
 
-    if req_type in name_mapping.keys():
+    if req_type in name_mapping:
         type_name = name_mapping.get(req_type)
     elif isinstance(req_type, tuple):
         type_name = [repr(req_type_i) for req_type_i in req_type]
@@ -521,10 +521,10 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
                 else:
                     # Limit outside of value range
                     ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
-
         else:
             if ax_lims_adjusted[i] is None:
                 ax_lims_adjusted[i] = data_range_global[i][:]
+            ax_lims_wo_margins = ax_lims_adjusted[i].copy()
 
         if overflow[i]:
             # Enforce data limits until axis limits +- margins

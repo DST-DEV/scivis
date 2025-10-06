@@ -154,10 +154,10 @@ def convert_to_siunitx(unit: str, brackets=True) -> str:
 
     # Replace units by the corresponding siunitx command
     for u in units:
-        if u in siunitx_units_mapping.keys():
+        if u in siunitx_units_mapping:
             unit = unit.replace(u, siunitx_units_mapping[u])
-        elif len(u) >= 2 and u[0] in siunitx_prefixes_mapping.keys() \
-                and u[1:] in siunitx_units_mapping.keys():
+        elif len(u) >= 2 and u[0] in siunitx_prefixes_mapping \
+                and u[1:] in siunitx_units_mapping:
             unit.replace(u,
                          siunitx_prefixes_mapping[u[0]]
                          + siunitx_units_mapping[u[1:]])

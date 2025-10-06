@@ -52,7 +52,6 @@ rcparams_line = {
     'lines.markeredgecolor': "auto",
     'lines.markeredgewidth': 1.0,
     'lines.markerfacecolor': "auto",
-    'lines.markersize': 10.0
     }
 
 rcparams_ticks = {
@@ -61,7 +60,6 @@ rcparams_ticks = {
     'ytick.direction': 'in',
     "xtick.top": True,
     "ytick.right": True,
-    'xtick.alignment': 'center',
 
     # Tick length (points)
     "xtick.major.size": 10,
@@ -177,13 +175,13 @@ default_text_profile = {
     'mathtext.fontset': 'cm'
     }
 
-mss = {".": dict(marker=".", ms=15, mec="k"),
-       "+": dict(marker="+", ms=15, mec="k"),
-       "x": dict(marker="x", ms=15, mec="k"),
-       "d": dict(marker="d", ms=8, mec="k"),
-       "1": dict(marker="1", ms=15, mec="k"),
-       "v": dict(marker="v", ms=8, mec="k"),
-       "default": dict(marker="+", ms=10, mec="k")
+mss = {".": {"marker":".", "ms":15, "mec":"k"},
+       "+": {"marker":"+", "ms":15, "mec":"k"},
+       "x": {"marker":"x", "ms":15, "mec":"k"},
+       "d": {"marker":"d", "ms":8, "mec":"k"},
+       "1": {"marker":"1", "ms":15, "mec":"k"},
+       "v": {"marker":"v", "ms":8, "mec":"k"},
+       "default": {"marker":"+", "ms":10, "mec":"k"}
        }
 
 scale_factor = .65

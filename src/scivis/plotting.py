@@ -72,7 +72,7 @@ def subplots(nrows=1, ncols=1,  profile="fullsize", scale=1, latex=False,
     if not isinstance(latex, bool):
         raise TypeError("latex must be a boolean value.")
 
-    if "figsize" not in kwargs.keys():
+    if "figsize" not in kwargs:
         figsize = rcparams.rcparams_figure["figure.figsize"]
         kwargs["figsize"] = (figsize[0]*ncols, figsize[1]*nrows)
 
@@ -82,9 +82,11 @@ def subplots(nrows=1, ncols=1,  profile="fullsize", scale=1, latex=False,
                    kwargs["figsize"][1] / nrows
                    / rcparams.rcparams_figure["figure.figsize"][1])
     scale_sub = 1/ncols * 1 / figscale
+
     if profile == "fullsize":
         profile_sub = "partsize"
     elif profile == "halfsize":
+        profile_sub = "partsize"
         scale_sub *= .5
     else:
         if not sciutils._validate_numeric(scale, allow_neg=False,
@@ -94,6 +96,7 @@ def subplots(nrows=1, ncols=1,  profile="fullsize", scale=1, latex=False,
         if profile == "partsize":
             profile_sub = "partsize"
         else:
+            profile_sub = "custom_scale"
 
         scale_sub *= scale
 

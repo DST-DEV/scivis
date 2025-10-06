@@ -200,12 +200,14 @@ def _validate_numeric(val: int | float | np.number,
     if not isinstance(val, (int, float, np.number)) or np.isnan(val) \
             or np.isinf(val):
         return False
-    elif not allow_neg and val < 0:
+
+    if not allow_neg and val < 0:
         return False
-    elif not allow_zero and val == 0:
+
+    if not allow_zero and val == 0:
         return False
-    else:
-        return True
+
+    return True
 
 
 def _replace_outside_nan(arr, min_val, max_val):
