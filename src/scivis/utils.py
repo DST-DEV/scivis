@@ -94,7 +94,8 @@ def _round_sig_digits(val, sig_figs=2):
 def _validate_arraylike_numeric(arr: ArrayLike, name: str = "",
                                 ndim: int | None = None,
                                 allow_neg: bool = True,
-                                allow_zero: bool = True):
+                                allow_zero: bool = True,
+                                allow_non_finite: bool = True):
     """Validate if a variabe is array-like and contains only numeric values.
 
     Parameters
@@ -115,6 +116,11 @@ def _validate_arraylike_numeric(arr: ArrayLike, name: str = "",
     allow_zero : bool, optional
         Selection whether zeros are allowed in the array.\n
         The default is True.
+    allow_non_finite : bool, optional
+        Selection whether non-finite values (Nan, infinite values) are allowed
+        in the array.\n
+        The default is True.
+
 
     Raises
     ------
@@ -161,6 +167,9 @@ def _validate_arraylike_numeric(arr: ArrayLike, name: str = "",
 
     if not allow_zero and np.any(arr == 0):
         raise ValueError(f"{name} must contain only non-zero values.")
+
+    if not allow_non_finite and not np.all(np.isfinite(arr)):
+        raise ValueError(f"{name} must contain only finite values.")
 
     return arr
 
