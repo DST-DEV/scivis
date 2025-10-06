@@ -135,8 +135,7 @@ def plot_line(x, y, ax=None,
               ax_show_grid_minor=False,
               profile="fullsize", scale=1, latex=False,
               override_axes_settings=False,
-              exp_fld=None, fname=None, ftype=".svg", savefig=False,
-              return_obj=False):
+              exp_fld=None, fname=None, ftype=".svg", savefig=False):
     """Plot one or multiple lines.
 
     Parameters
@@ -279,10 +278,6 @@ def plot_line(x, y, ax=None,
     savefig : bool, optional
         Whether the figure should be exported as an image file. \n
         The default is False.
-    return_obj : bool, optional
-        Whether the figure & axes object and the export path should be
-        returned.\n
-        The default is False.
 
     Raises
     ------
@@ -300,13 +295,12 @@ def plot_line(x, y, ax=None,
 
     Returns
     -------
-    fig : None | matplotlib.figure.Figure
+    fig : matplotlib.figure.Figure
         Figure object or None if return_obj is set to False.
-    ax : None | matplotlib.axes._axes.Axes
+    ax : matplotlib.axes._axes.Axes
         Axes object or None if return_obj is set to False.
     fpath : None | pathlib.Path
-        Export file path. If savefig=False or return_obj=False, then None is
-        returned.
+        Export file path. If savefig=False, then None is returned.
     """
     # Prepare plot data
     x, y = scifrmt._prepare_xy_line(x, y)
@@ -421,11 +415,7 @@ def plot_line(x, y, ax=None,
     else:
         fpath = None
 
-    if return_obj:
-        return fig, ax, fpath
-    else:
-        plt.close(fig)
-        return None, None, None
+    return fig, ax, fpath
 
 
 
