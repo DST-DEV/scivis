@@ -148,7 +148,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
     if isinstance(show_legend, bool):
         plt_labels = _check_style_variable(var=plt_labels,
                                            name="plt_labels",
-                                           req_type=str, n_lines=n_lines)
+                                           req_type=str, n_elem=n_lines)
         if plt_labels[0] is None:
             plt_labels = ["var"+str(i) for i in range(n_lines)]
     else:
@@ -264,19 +264,19 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
     # Check Alpha values
     alpha = _check_style_variable(var=alpha, name="alpha",
                                   req_type=(int, float, np.number),
-                                  n_lines=n_lines)
+                                  n_elem=n_lines)
     if not all((alpha_i is None or (alpha_i >= 0 and alpha_i <= 1))
                for alpha_i in alpha):
         raise ValueError("Alpha values must lie within 0 to 1")
 
     # Check Linestyles
     ls = _check_style_variable(var=linestyles, name="linestyles", req_type=str,
-                               n_lines=n_lines)
+                               n_elem=n_lines)
 
     # Check Linewidths
     lw = _check_style_variable(var=linewidths, name="linewidths",
                                req_type=(int, float, np.number),
-                               n_lines=n_lines)
+                               n_elem=n_lines)
 
     if markers is None:
         markers = [{"marker": None}]*n_lines
@@ -309,12 +309,12 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
     return plt_labels, axis_labels, col, alpha, ls, lw, markers
 
 
-def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
+def _check_style_variable(var, name, req_type, n_elem, fill_value=None):
     """Assert that a style variable is in the correct format.
 
     Check if a style variable is either a scalar value of None or the required
     type or a sequence of None or the required type.
-    If the variable is None, it is converted to a list with length n_lines
+    If the variable is None, it is converted to a list with length n_elem
     filled with the fill_value.
 
     Parameters
@@ -325,9 +325,8 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
         Name of the variable.
     req_type : type
         Required data type for the variable.
-    n_lines : int
-        Number of lines which are plotted. The variable needs to have this
-        length if it isn't scalar
+    n_elem : int
+        Number of elements the variable should have if it isn't scalar.
     fill_value : None | scalar, optional
         Value to fill var with in case it is None. The default is None.
 
@@ -336,12 +335,12 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
     TypeError
         If var is neither None, nor req_type nor a sequence of req_type.
     ValueError
-        If var is a sequence and its number of elements is not n_lines.
+        If var is a sequence and its number of elements is not n_elem.
 
     Returns
     -------
     var : list
-        List of length n_lines with either the original values from val, or the
+        List of length n_elem with either the original values from val, or the
         fill_value.
     """
     # Prepare type name string
@@ -362,11 +361,11 @@ def _check_style_variable(var, name, req_type, n_lines, fill_value=None):
 
     # Check if variable is valid
     if var is None:
-        var = [fill_value]*n_lines
+        var = [fill_value]*n_elem
     elif isinstance(var, req_type):
-        var = [var]*n_lines
+        var = [var]*n_elem
     elif isinstance(var, (tuple, list, np.ndarray)) and len(var) > 0:
-        if len(var) == n_lines:
+        if len(var) == n_elem:
             if not all(isinstance(var_i, req_type) for var_i in var):
                 raise TypeError("Invalid element type for " + name
                                 + " parameter. Must be a Sequence of "
