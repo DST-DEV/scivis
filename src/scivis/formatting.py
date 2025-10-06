@@ -538,6 +538,11 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
 
     x, y = data  # Unpack combined data again
 
+    # Replace invalid axis limits by None
+    ax_lims_adjusted = [[lim_ij if np.isfinite(lim_ij) else None
+                         for lim_ij in lim_i]
+                        for lim_i in ax_lims_adjusted]
+
     return x, y, ax_lims_adjusted
 
 
@@ -775,16 +780,21 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
 
         var = list(var)
         for i in range(2):
-            if var[i] is None:
+            if var[i] is None or var[i] is np.nan:
                 continue
             if req_len is not None and not len(var[i]) == req_len:
                 raise ValueError("Invalid number of elements for " + name
                                  + " of axis " + str(i) + ". "
                                  + "Must be a Sequence with two elements.")
-            var[i] = utils._validate_arraylike_numeric(var[i], name=name,
-                                                       ndim=1)
 
-            if sort:
+            for j in range(req_len):
+                if not (var[i][j] is None or var[i][j] is np.nan
+                        or utils._validate_numeric(var[i][j])):
+                    raise ValueError(name + " must contain only numeric "
+                                     "values or None.")
+
+            if sort and all(utils._validate_numeric(var_ij)
+                            for var_ij in var[i]):
                 var[i] = np.sort(var[i])
     else:
         raise TypeError(name + " must be a Sequence or None.")
