@@ -185,16 +185,16 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
                 for i in range(2):
                     if isinstance(ax_labels[i], str) and ax_labels[i]:
                         if isinstance(ax_units[i], str) and ax_units[i]:
-                            ax_units[i] = " [" + ax_units[i] + r"]"
+                            ax_units[i] = " $[" + ax_units[i] + r"]$"
                         else:
                             ax_units[i] = ""
-                        axis_labels[i] = ax_labels[i] + ax_units[i]
+                        axis_labels[i] = "$" + ax_labels[i] + "$" + ax_units[i]
 
         else:
             if latex is True:
                 axis_labels = [ltx.ensure_math(ax_labels[i]) for i in range(2)]
             else:
-                axis_labels = [ax_labels[i]
+                axis_labels = ["$" + ax_labels[i] + "$"
                                if ax_labels[i] is not None else None
                                for i in range(2)]
     else:
@@ -478,7 +478,7 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     data_range_global = [list(data_range_i)
                          for data_range_i in data_range_global]
 
-    # Applay autoscale for y-axis
+    # Apply autoscale for y-axis
     # Note: Manually specified y-axis limits are prioritized over autoscaling
     if autoscale_y and ax_lims[1] is None:
         if ax_lims[0] is None:
@@ -513,14 +513,16 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
                     ax_lims_adjusted[i][0] -= margin
                 else:
                     # Limit outside of value range
-                    ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
+                    ax_lims_adjusted[i][0] -= margin
+                    # ax_lims_adjusted[i][0] = data_range_global[i][0] - margin
 
                 if ax_lims_adjusted[i][1] <= data_range_global[i][1]:
                     # Limit lies within the data
                     ax_lims_adjusted[i][1] += margin
                 else:
                     # Limit outside of value range
-                    ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
+                    ax_lims_adjusted[i][1] += margin
+                    # ax_lims_adjusted[i][1] = data_range_global[i][1] + margin
         else:
             if ax_lims_adjusted[i] is None:
                 ax_lims_adjusted[i] = data_range_global[i][:]
@@ -786,7 +788,7 @@ def _check_axis_variable(var, name, sort=False, req_len=None):
                                  + " of axis " + str(i) + ". "
                                  + "Must be a Sequence with two elements.")
 
-            for j in range(req_len):
+            for j in range(len(var[i])):
                 if not (var[i][j] is None or var[i][j] is np.nan
                         or utils._validate_numeric(var[i][j])):
                     raise ValueError(name + " must contain only numeric "
