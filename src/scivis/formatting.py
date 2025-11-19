@@ -608,10 +608,11 @@ def _format_axes_line(ax, ax_labels=None, ax_lims=None,
     None.
     """
     # Set axis labels
-    if isinstance(ax_labels[0], str):
-        ax.set_xlabel(ax_labels[0])
-    if isinstance(ax_labels[1], str):
-        ax.set_ylabel(ax_labels[1])
+    if isinstance(ax_labels, (tuple, list, np.ndarray)):
+        if isinstance(ax_labels[0], str):
+            ax.set_xlabel(ax_labels[0])
+        if isinstance(ax_labels[1], str):
+            ax.set_ylabel(ax_labels[1])
 
     # Format ticks
     _format_ticks(ax=ax, which="major", ticks=ax_ticks, labels=ax_tick_lbls,
