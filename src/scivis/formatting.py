@@ -119,9 +119,10 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
         Linewidths. Can be specified either as a scalar global value
         or individually as a sequence with one element for each line.\n
         The default is None.
-    markers : None | (tuple, list, np.ndarray) of str, optional
-        Linewidths. Can be specified either as a scalar global value
-        or individually as a sequence with one element for each line.\n
+    markers : None | (tuple, list, np.ndarray) of str or dict, optional
+        Markers. Can be specified either as string specifying the marker type,
+        a list of marker types for (one for each line) or a list of
+        dictionaries containing the marker parameters for each line.\n
         The default is None.
 
     Returns
@@ -289,16 +290,33 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
         if len(markers) == 0:
             markers = [None]*n_lines
         elif len(markers) == n_lines:
-            if not all(isinstance(m_i, str) for m_i in markers):
+            if not all(isinstance(m_i, (str, dict)) for m_i in markers):
                 raise TypeError("Invalid element type for markers parameter."
                                 "Must be a Sequence of Strings.")
 
-            markers = []
+            markers_out = []
             for i in range(n_lines):
-                if markers[i] in rcparams.mss:
-                    markers.append(rcparams.mss[markers[i]])
+                m_i = markers[i]
+                if isinstance(m_i, str):
+                    if m_i in rcparams.mss:
+                        markers_out.append(rcparams.mss[m_i])
+                    else:
+                        markers_out.append(dict(marker=m_i))
+
+                    markers_out[i]["fec"] = col[i]
+                    markers_out[i]["mec"] = col[i]
                 else:
-                    markers.append(dict(marker=markers[i]))
+                    markers_out.append(m_i)
+
+                    if m_i.get("marker") is None:
+                        markers_out[i]["marker"] = "."
+
+                    if m_i.get("mec") is None:
+                        markers_out[i]["fec"] = col[i]
+
+                    if m_i.get("fec") is None:
+                        markers_out[i]["mec"] = col[i]
+
         else:
             raise ValueError("Invalid number of markers for number of input "
                              + "dimensions.")
@@ -306,7 +324,7 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
         raise TypeError("Invalid input for markers. Must be either a single"
                         "String or a Sequence of Strings.")
 
-    return plt_labels, axis_labels, col, alpha, ls, lw, markers
+    return plt_labels, axis_labels, col, alpha, ls, lw, markers_out
 
 
 def _check_style_variable(var, name, req_type, n_elem, fill_value=None):

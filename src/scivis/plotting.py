@@ -191,9 +191,10 @@ def plot_line(x, y, ax=None,
         Linewidths. Can be specified either as a scalar global value
         or individually as a sequence with one element for each line.\n
         The default is None.
-    markers : None | (tuple, list, np.ndarray) of str, optional
-        Linewidths. Can be specified either as a scalar global value
-        or individually as a sequence with one element for each line.\n
+    markers : None | (tuple, list, np.ndarray) of str or dict, optional
+        Markers. Can be specified either as string specifying the marker type,
+        a list of marker types for (one for each line) or a list of
+        dictionaries containing the marker parameters for each line.\n
         The default is None.
     ax_lims : None | (tuple, list, np.ndarray), optional
         Axis limits for the x- and y-axis. Must be either None or a 2-element
