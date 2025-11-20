@@ -280,15 +280,15 @@ def _resolve_style_line(n_lines, plt_labels=None, show_legend=True,
                                n_elem=n_lines)
 
     if markers is None:
-        markers = [{"marker": None}]*n_lines
+        markers_out = [{"marker": None}]*n_lines
     elif isinstance(markers, str) and len(markers) > 0:
         if markers in rcparams.mss:
-            markers = [rcparams.mss[markers]]*n_lines
+            markers_out = [rcparams.mss[markers]]*n_lines
         else:
-            markers = [dict(marker=markers)]*n_lines
+            markers_out = [dict(marker=markers)]*n_lines
     elif isinstance(markers, (tuple, list, np.ndarray)):
         if len(markers) == 0:
-            markers = [None]*n_lines
+            markers_out = [None]*n_lines
         elif len(markers) == n_lines:
             if not all(isinstance(m_i, (str, dict)) for m_i in markers):
                 raise TypeError("Invalid element type for markers parameter."
