@@ -400,12 +400,14 @@ def _check_style_variable(var, name, req_type, n_elem, fill_value=None):
     return var
 
 
-def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
-                        overflow=False):
+def _adjust_value_range(x, y, ax=None, ax_lims=None, margins=True,
+                        autoscale_y=True, rescale=True, overflow=False):
     """Adjust the value range and axis limits of 2d line plot data.
 
     Parameters
     ----------
+    ax : matplotlib.axes._axes.Axes, optional
+        Axes to plot the data on. The default is None.
     ax_lims : None | (tuple, list, np.ndarray), optional
         Axis limits for the x- and y-axis. Must be either None or a 2-element
         Sequence in which each element is a 2-element Sequence consisting of
@@ -428,6 +430,10 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
         within the x-axis limits. Thus only relevant, if x-axis limits are
         specified and no y-axis limits are given (If y-axis limits are
         specified, they overwrite this parameters).\n
+        The default is True.
+    rescale : bool, optional
+        Selection whether the axis limits should be rescaled to fit all the
+        data if the data is plotted on an existing axis.\n
         The default is True.
     overflow : bool | (tuple, list, np.ndarray), optional
         Selection whether overflow of the plotted values into the margins are
@@ -491,8 +497,9 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
     data_range[1, :, 0] = np.nanmin(y, axis=1)
     data_range[1, :, 1] = np.nanmax(y, axis=1)
 
-    data_range_global = list(np.array([np.min(data_range[:, :, 0], axis=1),
-                                       np.max(data_range[:, :, 1], axis=1)]).T)
+    data_range_global = np.array([np.min(data_range[:, :, 0], axis=1),
+                                  np.max(data_range[:, :, 1], axis=1)]).T
+
     data_range_global = [list(data_range_i)
                          for data_range_i in data_range_global]
 
@@ -505,6 +512,30 @@ def _adjust_value_range(x, y, ax_lims=None, margins=True, autoscale_y=True,
         else:
             ax_lims_adjusted[1] = [np.min(y[x >= ax_lims[0][0]]),
                                    np.max(y[x <= ax_lims[0][1]])]
+
+    # If a non-empty axes was given, consider the current axis limits of that
+    # axis
+    if isinstance(ax, mpl.axes._axes.Axes) and ax.has_data():
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+
+        if rescale:
+            # Expand current axis limits (if necessary) to fit new data
+            if ax_lims_adjusted[0] is None:
+                ax_lims_adjusted[0] = list(xlim)
+            else:
+                ax_lims_adjusted[0] = [min(ax_lims_adjusted[0][0], xlim[0]),
+                                       max(ax_lims_adjusted[0][1], xlim[1])]
+
+            if ax_lims_adjusted[1] is None:
+                ax_lims_adjusted[1] = list(ylim)
+            else:
+                ax_lims_adjusted[1] = [min(ax_lims_adjusted[1][0], ylim[0]),
+                                       max(ax_lims_adjusted[1][1], ylim[1])]
+        else:
+            # Keep current axis limits
+            ax_lims_adjusted[0] = list(xlim)
+            ax_lims_adjusted[1] = list(ylim)
 
     # Loop over axes
     data = np.stack((x, y), axis=0).astype(float)

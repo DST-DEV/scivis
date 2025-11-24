@@ -132,7 +132,8 @@ def plot_line(x, y, ax=None,
               plt_labels=None, show_legend=True, ax_labels=None, ax_units=None,
               colors=None, cmap=None, alpha=None,
               linestyles=None, linewidths=None, markers=None,
-              ax_lims=None, margins=True, autoscale_y=True, overflow=True,
+              ax_lims=None, margins=True, autoscale_y=True, rescale=True,
+              overflow=True,
               ax_ticks=None, ax_tick_lbls=None,
               ax_ticks_minor=None, ax_tick_lbls_minor=None,
               ax_show_minor_ticks=True, ax_show_grid=True,
@@ -218,6 +219,10 @@ def plot_line(x, y, ax=None,
         within the x-axis limits. Thus only relevant, if x-axis limits are
         specified and no y-axis limits are given (If y-axis limits are
         specified, they overwrite this parameters).\n
+        The default is True.
+    rescale : bool, optional
+        Selection whether the axis limits should be rescaled to fit all the
+        data if the data is plotted on an existing axis.\n
         The default is True.
     overflow : bool | (tuple, list, np.ndarray), optional
         Selection whether overflow of the plotted values into the margins are
@@ -310,9 +315,10 @@ def plot_line(x, y, ax=None,
     # Prepare plot data
     x, y = scifrmt._prepare_xy_line(x, y)
 
-    x, y, ax_lims = scifrmt._adjust_value_range(x, y, ax_lims=ax_lims,
+    x, y, ax_lims = scifrmt._adjust_value_range(x, y, ax=ax, ax_lims=ax_lims,
                                                 margins=margins,
                                                 autoscale_y=autoscale_y,
+                                                rescale=rescale,
                                                 overflow=overflow)
 
     # Prepare style settings
@@ -364,8 +370,10 @@ def plot_line(x, y, ax=None,
                 ax.plot(x[i, :], y[i, :], label=plt_labels[i], **markers[i],
                         lw=lw[i], c=col[i], alpha=alpha[i], zorder=2)
 
-        if show_legend and x.shape[0] > 1:
-            ax.legend()
+        if show_legend:
+            handles, labels = ax.get_legend_handles_labels()
+            if len(handles)>1:
+                ax.legend()
 
         scifrmt._format_axes_line(
             ax=ax, ax_labels=axis_labels, ax_lims=ax_lims,
